@@ -241,6 +241,9 @@
   function renderSettings() {
     var root = SG.$('#settings-root');
     root.innerHTML = '';
+    var aacRoot = el('div', { id: 'aac-root' });
+    root.append(aacRoot);
+    SG.AACSetup.render(aacRoot);
     var s = SG.settings;
     function bind(key, transform) {
       return function () { s[key] = transform ? transform(this) : this.value; SG.saveSettings(); syncHeader(); };
@@ -253,23 +256,14 @@
       return sel;
     }
     root.append(el('div', { class: 'card settings' },
-      el('h2', {}, 'Settings / Ajustes'),
-      el('label', { class: 'field' }, el('span', { class: 'field-label', text: 'Prompt language' }),
-        el('select', { onchange: bind('uiLang') },
-          el('option', { value: 'bi', selected: s.uiLang === 'bi' }, 'Bilingual: English + Español'),
-          el('option', { value: 'en', selected: s.uiLang === 'en' }, 'English only'),
-          el('option', { value: 'es', selected: s.uiLang === 'es' }, 'Español solamente'))),
-      el('label', { class: 'field' }, el('span', { class: 'field-label', text: 'AAC board starts in' }),
-        el('select', { onchange: bind('answerLang') },
-          el('option', { value: 'en', selected: s.answerLang === 'en' }, 'English'),
-          el('option', { value: 'es', selected: s.answerLang === 'es' }, 'Español'))),
+      el('h2', {}, '⚙️ Game settings'),
       el('label', { class: 'field' }, el('span', { class: 'field-label', text: 'Support level for WH answers' }),
         el('select', { onchange: bind('level', function (x) { return Number(x.value); }) },
           el('option', { value: 1, selected: s.level === 1 }, '1 – Max support: frame filled in, choose the answer word'),
           el('option', { value: 2, selected: s.level === 2 }, '2 – Model chart shown, student builds the whole sentence'),
           el('option', { value: 3, selected: s.level === 3 }, '3 – Independent: no model (Help button still available)'))),
       el('label', { class: 'check' }, el('input', { type: 'checkbox', checked: s.deviceMode, onchange: bind('deviceMode', function (x) { return x.checked; }) }),
-        ' Student answers on their own TouchChat device (hide the on-screen board; clinician scores)'),
+        ' Student answers on their own AAC device (hide the on-screen board; clinician scores)'),
       el('label', { class: 'check' }, el('input', { type: 'checkbox', checked: s.speakEachWord, onchange: bind('speakEachWord', function (x) { return x.checked; }) }),
         ' Speak each word when tapped'),
       el('label', { class: 'check' }, el('input', { type: 'checkbox', checked: s.autoSpeak, onchange: bind('autoSpeak', function (x) { return x.checked; }) }),
@@ -289,12 +283,15 @@
   function syncHeader() {
     SG.$('#student-name').value = SG.settings.student;
     SG.$('#ui-lang').value = SG.settings.uiLang;
+    SG.$('#aac-chip').textContent = '🗂️ ' + SG.Profile.label();
   }
 
   /* ---------- Startup ---------- */
   function init() {
+    SG.Profile.apply();
     board = SG.createBoard(SG.$('#board-root'));
     board.hide();
+    SG.Profile.onChange = function () { board.reload(); syncHeader(); };
 
     document.querySelectorAll('[data-view]').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -303,8 +300,21 @@
         show(v);
       });
     });
-    SG.$('#student-name').addEventListener('change', function () { SG.settings.student = this.value.trim(); SG.saveSettings(); });
-    SG.$('#ui-lang').addEventListener('change', function () { SG.settings.uiLang = this.value; SG.saveSettings(); renderHome(); });
+    // Each student keeps their own AAC profile (program, grid, language, buttons).
+    SG.$('#student-name').addEventListener('change', function () {
+      SG.settings.student = this.value.trim();
+      SG.saveSettings();
+      SG.Profile.apply();
+      if (!SG.$('#view-settings').hidden) renderSettings();
+      else renderHome();
+    });
+    SG.$('#ui-lang').addEventListener('change', function () {
+      var p = SG.Profile.current();
+      p.lang = this.value;
+      SG.Profile.save(p);
+      if (!SG.$('#view-settings').hidden) renderSettings();
+      else renderHome();
+    });
     SG.$('#import-file').addEventListener('change', function () {
       if (this.files[0]) SG.Builder.importFile(this.files[0], renderHome);
       this.value = '';

@@ -6,7 +6,7 @@ It targets:
 
 | Goal | How the game does it |
 |---|---|
-| **WH comprehension** (who/what/where/when/why) answered in **3–5 words** | The student builds a sentence on a TouchChat-style AAC board using a **predictable chart frame** ("The ___ is kicking." / "El ___ está pateando."). The answer and the 3–5 word length are checked automatically. |
+| **WH comprehension** (who/what/where/when/why) answered in **3–5 words** | The student builds a sentence on an AAC board set up like their own (TouchChat, LAMP, TD Snap, Proloquo2Go) using a **predictable chart frame** ("The ___ is kicking." / "El ___ está pateando."). The answer and the 3–5 word length are checked automatically. |
 | **Binary questions** | Big yes/no or this-or-that picture buttons ("Is it a ball or a book?"). |
 | **Formulating questions** from a picture scene | "Ask a WHERE question about the picture." The student must start with a question word and use 3–5 words ("Where is the ball?" / "¿Dónde está la pelota?"). |
 | **Articulation: CVC, VCV, CVCV** | Word cards in English and Spanish with a spoken model, slow syllable model, record and play back, and clinician scoring (correct / close / try again). |
@@ -28,22 +28,38 @@ To make a lesson (no coding needed):
 
 **Sharing:** **🔗 Copy share link** puts the whole lesson inside a link, so families can practice at home with no account. **⬇️ Export JSON** / **⬆️ Import lessons** move lessons between devices.
 
-## Using it with a real TouchChat device
+## Matching the student's AAC system
 
-The on-screen board uses the Modified Fitzgerald Key colors and core words, like TouchChat:
-- Yellow: people
-- Green: actions
-- Orange: things
-- Blue: describing words
-- Purple: questions
+Open **⚙️ Settings** (or tap the 🗂️ button at the top). Pick:
 
-Press **🇺🇸 EN / 🇲🇽 ES** on the board to switch languages.
+- **AAC program**, which sets how the board behaves:
+  - **TouchChat (WordPower)**: category folders, returns to Home after each word, activity-word row on.
+  - **LAMP Words for Life**: words stay in fixed spots for motor planning, activity-word row off, 84 Full or 84 1-Hit.
+  - **TD Snap Motor Plan**: fixed spots, activity-word row off.
+  - **TD Snap Core First**: expandable grids.
+  - **Proloquo2Go (Crescendo)**: many grid sizes.
+  - **Other**: your own board.
+- **Grid size**: common sizes for that program, or **Custom rows × columns** to match the device exactly.
+- **Language**:
+  - **English**, or **Español**.
+  - **Both**: a 🇺🇸/🇲🇽 switch appears on the board, and questions are shown in both languages.
+- **Layout**: core words + category folders (2-hit), or all words on one page (1-hit).
+- **Activity-word row**: on or off. Turn it off to make the student find words through their motor plan. Lesson words that aren't on the board then appear under **⭐ Lesson words**.
 
-If the student uses their own device, open **⚙️ Settings** and turn on **"Student answers on their own TouchChat device"**. The on-screen board is hidden and you score each answer with the clinician buttons.
+**Each student gets their own setup.** Type the student's name at the top first, and their program, grid, language, and buttons are saved for them.
+
+**Customize the board** (below the AAC settings):
+- Tap any button to change its word, picture, or color.
+- Turn a button into a folder, or add new pages.
+- Use **↔ Swap with…** to move words to the same spots as on the student's device.
+- English and Spanish boards are edited separately.
+
+These are practice layouts in the *style* of each program. They are not the official vocabulary files from PRC-Saltillo, Tobii Dynavox, or AssistiveWare, so the starting word positions won't match the device until you customize them.
+
+If the student uses their real device during the game, turn on **"Student answers on their own AAC device"**. The on-screen board is hidden and you score each answer.
 
 ## Settings
 
-- **Prompt language:** bilingual, English only, or Spanish only.
 - **Support levels:**
   1. The frame is already filled in and the student picks the answer word.
   2. The model chart is shown and the student builds the whole sentence.
@@ -67,7 +83,8 @@ To try it on your own computer, run `python3 -m http.server` in this folder and 
 | File | What to change |
 |---|---|
 | `js/data/lessons.js` | Built-in lessons for everyone (paste exported JSON here) |
-| `js/data/vocab.js` | AAC board words and categories, English and Spanish |
+| `js/data/vocab.js` | Starting AAC words and categories, English and Spanish |
+| `js/aac.js` | AAC program presets and grid sizes |
 | `js/data/artic-words.js` | CVC / VCV / CVCV word lists |
 | `css/styles.css` | Colors and sizes |
 

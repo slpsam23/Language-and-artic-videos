@@ -16,7 +16,7 @@
     greatQ: L('Great question!', '¡Muy buena pregunta!'),
     notQ: L('Start with a question word.', 'Empieza con una palabra de pregunta.'),
     useCue: L('Use the question word: ', 'Usa la palabra: '),
-    device: L('Answer on your TouchChat device.', 'Contesta en tu TouchChat.'),
+    device: L('Answer on your talker (AAC device).', 'Contesta en tu dispositivo de comunicación.'),
     copy: L('Copy the model.', 'Copia el modelo.'),
     model: L('Model', 'Modelo'),
     example: L('Example', 'Ejemplo'),
