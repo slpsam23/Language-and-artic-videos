@@ -41,7 +41,7 @@
         activities: raw.activities.filter(function (a) { return a && a.type; }).map(function (a) {
           var out = { type: String(a.type) };
           if (typeof a.at === 'number' && a.at >= 0) out.at = a.at;
-          ['question', 'frame', 'prompt', 'example', 'word', 'shape'].forEach(function (k) { if (a[k]) out[k] = txt(a[k]); });
+          ['question', 'frame', 'prompt', 'example', 'word', 'shape', 'sound', 'target'].forEach(function (k) { if (a[k]) out[k] = txt(a[k]); });
           if (a.wh) out.wh = String(a.wh);
           if (a.cue) out.cue = String(a.cue);
           if (Number(a.level) >= 1 && Number(a.level) <= 4) out.level = Number(a.level);
@@ -118,8 +118,18 @@
   }
 
   /* Upload a picture (shrunk and kept in the lesson) or paste a link. */
-  function pictureField(obj, label) {
+  function drawRequest(desc) {
+    return 'Draw a picture scene for a children’s speech therapy activity, as SVG code.\n\n' +
+      'SCENE: ' + desc + '\n\n' +
+      'Style: simple, bright, friendly cartoon with flat colors and clean shapes, like a picture book. ' +
+      'Make the people, animals and objects in the scene large and easy to recognize, with clear actions. ' +
+      'Use viewBox="0 0 800 500". No text or letters, no external images or fonts, no scripts.\n' +
+      'Reply with only the SVG code in one code block.';
+  }
+
+  function pictureField(obj, label, describe) {
     var wrap = el('div', { class: 'field' });
+    var drawing = false;
     function draw() {
       wrap.innerHTML = '';
       var file = el('input', { type: 'file', accept: 'image/*', hidden: true, onchange: function () {
@@ -135,8 +145,34 @@
         el('div', { class: 'row wrap' },
           obj.image && SG.safeImage(obj.image) ? el('img', { class: 'pic-thumb', src: SG.safeImage(obj.image), alt: 'Picture preview' }) : null,
           el('button', { class: 'btn', type: 'button', onclick: function () { file.click(); } }, '📷 Upload picture'),
+          el('button', { class: 'btn', type: 'button', onclick: function () { drawing = !drawing; draw(); } }, '🎨 Ask Claude to draw it'),
           obj.image ? el('button', { class: 'btn small', type: 'button', onclick: function () { obj.image = ''; draw(); } }, 'Remove') : null,
           file, link));
+      if (drawing) {
+        var desc = el('textarea', { rows: 2, class: 'draw-desc' });
+        desc.value = (describe && describe()) || '';
+        var answer = el('textarea', { rows: 3, class: 'draw-desc', placeholder: 'Paste Claude’s answer (the SVG code) here' });
+        wrap.append(el('div', { class: 'draw-box' },
+          el('div', { class: 'field-label', text: 'What should the picture show?' }), desc,
+          el('div', { class: 'row wrap' },
+            el('button', { class: 'btn primary', type: 'button', onclick: function () {
+              if (!desc.value.trim()) { SG.toast('Describe the picture first.'); return; }
+              var req = drawRequest(desc.value.trim());
+              (navigator.clipboard ? navigator.clipboard.writeText(req) : Promise.reject()).then(function () {
+                SG.toast('Copied! Paste it into Claude, then paste Claude’s answer below.');
+              }, function () { prompt('Copy this request for Claude:', req); });
+            } }, '📋 Copy request'),
+            el('a', { class: 'btn', href: 'https://claude.ai/new', target: '_blank', rel: 'noopener' }, 'Open Claude ↗')),
+          answer,
+          el('button', { class: 'btn primary', type: 'button', onclick: function () {
+            var img = SG.svgToImage(answer.value);
+            if (!img) { SG.toast('No picture found. Copy Claude’s whole answer (it starts with <svg).'); return; }
+            obj.image = img;
+            drawing = false;
+            draw();
+            SG.toast('Picture added ✔ Not quite right? Ask Claude to change it, then paste again.');
+          } }, '✔ Use this picture')));
+      }
     }
     draw();
     return wrap;
@@ -193,7 +229,9 @@
     var form = el('div', { class: 'card act-form' });
     form.append(el('h3', {}, (editing.index == null ? 'New ' : 'Edit ') + typeName(act.type)));
     form.append(timeField(act));
-    if (act.type !== 'artic') form.append(pictureField(act, 'Picture for this question (optional — e.g. a different scene for each question)'));
+    if (act.type !== 'artic') form.append(pictureField(act, 'Picture for this question (optional — e.g. a different scene for each question)', function () {
+      return SG.pick(act.question || act.prompt, 'en');
+    }));
     form.append(el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'Language level' }),
       el('select', { onchange: function () { if (Number(this.value)) act.level = Number(this.value); else delete act.level; } },
         el('option', { value: 0, selected: !act.level }, 'All levels'),
@@ -237,22 +275,41 @@
       form.append(choicesEditor(act, { noCorrect: true, label: 'Scene words to put on the board' }));
     } else if (act.type === 'artic') {
       act.parts = act.parts || { en: [], es: [] };
+      act.shape = act.shape || L('cvc', 'cvcv');
+      act.sound = act.sound || L('', '');
+      act.target = act.target || L('', '');
+      var kinds = [['iso', 'Sound in isolation']].concat(Object.keys(SG.ARTIC_TYPES).map(function (k) { return [k, SG.ARTIC_TYPES[k].label]; }));
+      var targetOpts = function (l) {
+        var ids = SG.ISO_SOUNDS[l].map(function (x) { return x.id; });
+        var extra = l === 'es' ? ['bl', 'br', 'pl', 'pr', 'tr', 'dr', 'cl', 'cr', 'gr', 'gl', 'fl', 'fr']
+          : ['r-vocalic', 'st', 'sp', 'sk', 'sn', 'sm', 'sl', 'sw', 'bl', 'pl', 'cl', 'fl', 'gl', 'br', 'tr', 'dr', 'cr', 'gr', 'fr', 'pr', 'spl', 'scr', 'str', '-st', '-nt', '-lk', '-nd'];
+        return [['', '(none)']].concat(ids.concat(extra).filter(function (x, i, a) { return a.indexOf(x) === i; }).map(function (id) {
+          var iso = SG.ISO_SOUNDS[l].find(function (x) { return x.id === id; });
+          return [id, iso ? iso.name : (SG.SOUND_LABELS[id] || '/' + id + '/')];
+        }));
+      };
+      var perLang = function (l) {
+        var flag = l === 'en' ? '🇺🇸 English' : '🇲🇽 Español';
+        var box = el('div', { class: 'artic-lang-col' }, el('strong', { text: flag }),
+          el('label', { class: 'field' }, el('span', { class: 'field-label', text: 'Practice' }),
+            select(act.shape, l, kinds, function () { renderBuilder(root); })));
+        if (act.shape[l] === 'iso') {
+          box.append(el('label', { class: 'field' }, el('span', { class: 'field-label', text: 'Sound' }),
+            select(act.sound, l, [['', '— choose —']].concat(SG.ISO_SOUNDS[l].map(function (x) { return [x.id, x.name]; })))));
+        } else {
+          box.append(
+            el('label', { class: 'field' }, el('span', { class: 'field-label', text: 'Word' }), input(act.word, l, { placeholder: l === 'en' ? 'dog' : 'perro' })),
+            el('label', { class: 'field' }, el('span', { class: 'field-label', text: 'Target sound (highlighted)' }), select(act.target, l, targetOpts(l))),
+            el('label', { class: 'field' }, el('span', { class: 'field-label', text: act.shape[l] === 'cvc' || act.shape[l] === 'vcv' ? 'Sounds, comma separated' : 'Syllables, comma separated' }),
+              el('input', { type: 'text', value: (act.parts[l] || []).join(', '), placeholder: l === 'en' ? 'd, o, g' : 'pe, rro',
+                oninput: function () { act.parts[l] = this.value.split(',').map(function (x) { return x.trim(); }).filter(Boolean); } })));
+        }
+        return box;
+      };
+      act.word = act.word || L('', '');
       form.append(el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'Picture (emoji)' }),
         input(act, 'emoji', { class: 'emoji-input', placeholder: '🐕' })));
-      form.append(biInputs('Word', act, 'word', { en: 'dog', es: 'perro' }));
-      act.shape = act.shape || L('cvc', 'cvcv');
-      var shapes = Object.keys(SG.SHAPES).map(function (k) { return [k, SG.SHAPES[k]]; });
-      form.append(el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'Syllable shape' }),
-        el('div', { class: 'row wrap' }, el('label', {}, '🇺🇸 ', select(act.shape, 'en', shapes)),
-          el('label', {}, '🇲🇽 ', select(act.shape, 'es', shapes)))));
-      var partsObj = { en: act.parts.en.join(', '), es: act.parts.es.join(', ') };
-      var partsInput = function (l) {
-        return el('input', { type: 'text', value: partsObj[l], placeholder: l === 'en' ? 'd, o, g' : 'pe, rro',
-          oninput: function () { act.parts[l] = this.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean); } });
-      };
-      form.append(el('div', { class: 'field' },
-        el('div', { class: 'field-label', text: 'Sounds (CVC/VCV) or syllables (CVCV), comma separated' }),
-        el('div', { class: 'bi-inputs' }, el('label', {}, '🇺🇸 ', partsInput('en')), el('label', {}, '🇲🇽 ', partsInput('es')))));
+      form.append(el('div', { class: 'artic-lang-cols' }, perLang('en'), perLang('es')));
       form.append(el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'Trials' }),
         el('input', { type: 'number', min: 1, max: 10, value: act.trials || 3, oninput: function () { act.trials = Number(this.value) || 3; } })));
     }
@@ -285,7 +342,12 @@
       if (a.choices.filter(function (c) { return c.correct; }).length !== 1) return 'Tick exactly one correct option.';
     }
     if (a.type === 'formulate') a.choices = (a.choices || []).filter(has);
-    if (a.type === 'artic' && !has(a.word)) return 'Type the word.';
+    if (a.type === 'artic') {
+      var ok = ['en', 'es'].some(function (l) {
+        return a.shape && a.shape[l] === 'iso' ? !!(a.sound && a.sound[l]) : String((a.word && a.word[l]) || '').trim();
+      });
+      if (!ok) return 'Type a word, or choose a sound for “Sound in isolation”.';
+    }
     return '';
   }
 
@@ -368,7 +430,9 @@
         el('div', { class: 'row wrap' },
           input(draft, 'video', { placeholder: 'https://www.youtube.com/watch?v=…', class: 'grow' }),
           el('button', { class: 'btn primary', type: 'button', onclick: function () { loadPreview(root); } }, 'Load video'))),
-      pictureField(draft, 'Picture scene (shown when there is no video, and on the printed chart). Upload a photo or drawing, or paste a link.'),
+      pictureField(draft, 'Picture scene (shown when there is no video, and on the printed chart). Upload a photo, ask Claude to draw one, or paste a link.', function () {
+        return draft.picturePrompt || SG.pick(draft.description, 'en') || SG.pick(draft.title, 'en');
+      }),
       draft.picturePrompt ? el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'Need a picture? Paste this description into an AI picture maker (see the README), then upload the picture above.' }),
         el('div', { class: 'row wrap' }, el('span', { class: 'muted grow', text: draft.picturePrompt }),
           el('button', { class: 'btn small', type: 'button', onclick: function () {

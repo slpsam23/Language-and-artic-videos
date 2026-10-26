@@ -59,9 +59,17 @@ Then fix any differences with the button editor.
 
 - **Sound in isolation:** the computer voice can't say a sound by itself (it says "ess" for *s*). So press **🎙️ Record your model** once per sound. Your recording is saved on that device and plays as the model every time. **🐢 In syllables** plays the sound in syllables instead.
 - **Tap vs. trill:** choose Español → *Target sound* → **r suave – tap** or **rr fuerte – trill**. Words are sorted by Spanish rules: trill at the start of a word, after *n/l/s*, or written *rr*; tap everywhere else.
+- **In lessons:** in the builder's *Articulation word* activity, choose **Practice** for each language: *Sound in isolation* (pick the sound, e.g. rr fuerte), CVC/VCV/CVCV, 3/4/5 syllables, clusters, or R words, with an optional highlighted target sound.
 - **Add your own words** in `js/data/artic-more.js` (multisyllabic, clusters, R words) or `js/data/artic-words.js` (CVC, VCV, CVCV).
 
 ## Real pictures instead of emoji
+
+The sample lessons now come with drawn picture scenes. For your own lessons and questions you have three choices in the picture field:
+- **📷 Upload picture**: your photo, a screenshot, or a picture from an AI picture maker.
+- **🎨 Ask Claude to draw it**: describe the scene, copy the request into Claude (Pro works), and paste Claude's answer back. Claude draws a simple cartoon scene like the sample lessons. Ask Claude to change things ("make the dog bigger") and paste again.
+- **A picture link.**
+
+### More picture details
 
 In **🛠️ Build**, press **📷 Upload picture** for the lesson's scene. Each question can also have its own picture, so a story can have a new scene for every question. Pictures are shrunk automatically and saved inside the lesson. Video lessons use the paused video as the picture.
 
@@ -149,3 +157,9 @@ To try it on your own computer, run `python3 -m http.server` in this folder and 
 | `css/styles.css` | Colors and sizes |
 
 Privacy: everything (lessons, charts, data) is saved only in the browser on that device. Nothing is sent to a server. The exception is YouTube, which loads the videos (using the privacy-enhanced `youtube-nocookie.com` player).
+
+## Updates and old copies
+
+The version number is at the bottom of every page. When a newer version is online, a blue **"A new version of the game is ready"** bar appears; tap **Reload now**. (Browsers, especially iPad home-screen apps, can keep showing an old copy otherwise.)
+
+For whoever edits the code: with each update, change the version in `js/core.js` (`SG.VERSION`), in `version.json`, and in the `?v=` parts of `index.html`.

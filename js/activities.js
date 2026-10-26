@@ -338,27 +338,37 @@
     box.append(holder, dots);
 
     function item(l) {
-      return {
-        word: SG.pick(act.word, l),
-        emoji: act.emoji,
-        parts: (act.parts && act.parts[l]) || SG.pick(act.word, l).split('')
-      };
+      var parts = act.parts && act.parts[l] && act.parts[l].length ? act.parts[l] : [SG.pick(act.word, l)];
+      var it = { word: SG.pick(act.word, l), emoji: act.emoji, parts: parts };
+      if (act.target && SG.pick(act.target, l)) it.target = SG.pick(act.target, l);
+      return it;
     }
     function shapeFor(l) { return (act.shape && SG.pick(act.shape, l)) || 'cvc'; }
+    function isoSound(l) {
+      var id = act.sound && SG.pick(act.sound, l);
+      return SG.ISO_SOUNDS[l].find(function (x) { return x.id === id; }) || SG.ISO_SOUNDS[l][0];
+    }
+    function usable(l) { return shapeFor(l) === 'iso' ? !!(act.sound && SG.pick(act.sound, l)) : !!SG.pick(act.word, l); }
+    if (!usable(lang)) lang = lang === 'en' ? 'es' : 'en';
+    function promptText(l) { return shapeFor(l) === 'iso' ? isoSound(l).name : item(l).word; }
+    function skill(l) { return shapeFor(l) === 'iso' ? 'Artic – isolation ' + isoSound(l).name : 'Artic – ' + SG.SHAPES[shapeFor(l)]; }
 
     function draw() {
       holder.innerHTML = '';
-      var langToggle = (SG.pick(act.word, 'en') && SG.pick(act.word, 'es')) ? el('button', {
+      var langToggle = usable('en') && usable('es') ? el('button', {
         class: 'btn small', type: 'button', onclick: function () { lang = lang === 'en' ? 'es' : 'en'; draw(); }
       }, lang === 'en' ? '🇲🇽 Español' : '🇺🇸 English') : null;
       holder.append(el('div', { class: 'row center' }, langToggle));
-      holder.append(SG.ArticCard(item(lang), shapeFor(lang), lang, {
+      var make = shapeFor(lang) === 'iso'
+        ? function (o) { return SG.IsoCard(isoSound(lang), lang, o); }
+        : function (o) { return SG.ArticCard(item(lang), shapeFor(lang), lang, o); };
+      holder.append(make({
         onScore: function (s) {
           if (finished) return;
           scores.push(s);
           SG.Log.add({
-            type: 'artic', skill: 'Artic – ' + SG.SHAPES[shapeFor(lang)], lang: lang,
-            lesson: SG.biString(ctx.lesson.title), prompt: item(lang).word, response: s,
+            type: 'artic', skill: skill(lang), lang: lang,
+            lesson: SG.biString(ctx.lesson.title), prompt: promptText(lang), response: s,
             result: s === 'approx' ? 'cued' : s
           });
           drawDots();
@@ -402,7 +412,8 @@
       return act.type;
     },
     promptText: function (act) {
-      return SG.biString(act.question || act.prompt || act.word || '');
+      var word = act.word && (act.word.en || act.word.es) ? act.word : null;
+      return SG.biString(act.question || act.prompt || word || act.sound || '');
     }
   };
 })(window.SG);

@@ -335,3 +335,14 @@ tr.result-cued td:last-child { color: var(--warn); font-weight: 700; }
 .moment-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 6px 0; border-bottom: 1px solid var(--border); }
 .moment-time { width: 5.5em; font-variant-numeric: tabular-nums; }
 #ai-lesson-body .player-box { max-width: 720px; margin: 8px 0; }
+.update-banner { position: fixed; top: 0; left: 0; right: 0; z-index: 70; background: var(--primary); color: var(--primary-text); padding: 10px 16px; text-align: center; font-weight: 700; }
+.update-banner .btn { margin-left: 10px; }
+.site-footer { text-align: center; font-size: .8rem; padding: 10px 0 24px; }
+.artic-lang-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 700px) { .artic-lang-cols { grid-template-columns: 1fr; } }
+.artic-lang-col { border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+.artic-lang-col .field input, .artic-lang-col .field select { width: 100%; }
+.draw-box { margin-top: 10px; padding: 10px; border: 2px dashed var(--primary); border-radius: 10px; background: var(--bg); }
+.draw-desc { width: 100%; font: inherit; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); margin: 6px 0; }
+.lesson-scene img { background: #fff; }
+@media print { .print-img { max-width: 100%; max-height: 45vh; } }

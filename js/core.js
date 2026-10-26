@@ -31,6 +31,9 @@ window.SG = window.SG || {};
     return node;
   };
 
+  /* Bump this (and version.json, and the ?v= in index.html) with every update. */
+  SG.VERSION = '2026.10.26-1';
+
   SG.$ = function (sel, root) { return (root || document).querySelector(sel); };
 
   /* localStorage wrapper that never throws (private mode, blocked storage). */
@@ -179,8 +182,26 @@ window.SG = window.SG || {};
   SG.safeImage = function (src) {
     src = String(src || '');
     if (/^https?:\/\//i.test(src)) return src;
+    if (/^img\/[\w\/-]+\.(svg|png|jpe?g|webp)$/i.test(src)) return src;   // pictures that ship with the game
+    if (/^data:image\/svg\+xml;base64,[A-Za-z0-9+\/=]+$/.test(src) && src.length < 1500000) return src;
     if (/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(src) && src.length < 3000000) return src;
     return '';
+  };
+
+  /* Turn SVG code (e.g. drawn by Claude) into a picture. Shown through <img>, which never runs
+     scripts; risky parts are stripped anyway. */
+  SG.svgToImage = function (text) {
+    var m = String(text || '').match(/<svg[\s\S]*<\/svg>/i);
+    if (!m) return '';
+    var svg = m[0]
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, '')
+      .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*')/gi, '')
+      .replace(/(href\s*=\s*)("|')\s*(javascript:|https?:)[^"']*\2/gi, '$1$2#$2');
+    if (!/xmlns=/.test(svg)) svg = svg.replace(/<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+    var bytes = new TextEncoder().encode(svg), bin = '';
+    bytes.forEach(function (b) { bin += String.fromCharCode(b); });
+    return 'data:image/svg+xml;base64,' + btoa(bin);
   };
 
   SG.download = function (filename, text, type) {

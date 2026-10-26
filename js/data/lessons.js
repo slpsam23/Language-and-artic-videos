@@ -41,6 +41,7 @@
                         'Un niño patea una pelota y su perro corre en el parque.'),
       video: '',
       scene: '🌳👦⚽🐕☀️',
+      image: 'img/scenes/park.svg',
       activities: [
         { type: 'wh', wh: 'who', question: SG.L('Who is kicking the ball?', '¿Quién está pateando la pelota?'),
           frame: SG.L('The ___ is kicking', 'El ___ está pateando'),
@@ -70,6 +71,7 @@
                         'Una niña come una galleta y toma leche en la cocina.'),
       video: '',
       scene: '🍳👧🍪🥛',
+      image: 'img/scenes/snack.svg',
       activities: [
         { type: 'wh', wh: 'who', question: SG.L('Who is eating?', '¿Quién está comiendo?'),
           frame: SG.L('The ___ is eating', 'La ___ está comiendo'),
@@ -99,6 +101,7 @@
                         'Papá lee un libro en la noche y el niño se duerme en la cama.'),
       video: '',
       scene: '🌙👨📖👦🛏️',
+      image: 'img/scenes/bedtime.svg',
       activities: [
         { type: 'wh', wh: 'who', question: SG.L('Who is reading?', '¿Quién está leyendo?'),
           frame: SG.L('___ is reading', '___ está leyendo'),

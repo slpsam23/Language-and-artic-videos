@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="A boy kicks a ball at the park while his dog runs">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc8ff"/><stop offset="1" stop-color="#dff3ff"/></linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#sky)"/>
+  <g stroke="#ffc928" stroke-width="6" stroke-linecap="round">
+    <line x1="690" y1="20" x2="690" y2="0"/><line x1="745" y1="40" x2="760" y2="25"/><line x1="765" y1="90" x2="790" y2="90"/>
+    <line x1="745" y1="140" x2="762" y2="155"/><line x1="635" y1="40" x2="620" y2="25"/><line x1="615" y1="90" x2="590" y2="90"/>
+  </g>
+  <circle cx="690" cy="90" r="48" fill="#ffd23f"/>
+  <g fill="#fff"><circle cx="140" cy="85" r="28"/><circle cx="175" cy="75" r="36"/><circle cx="212" cy="88" r="26"/><rect x="140" y="85" width="72" height="28" rx="14"/>
+    <circle cx="420" cy="60" r="22"/><circle cx="450" cy="52" r="30"/><circle cx="480" cy="62" r="20"/><rect x="420" y="60" width="60" height="22" rx="11"/></g>
+  <path d="M0 300 Q 200 220 420 290 T 800 270 V 500 H 0 Z" fill="#8fd47a"/>
+  <rect y="330" width="800" height="170" fill="#62bb45"/>
+  <path d="M520 500 C 560 430 640 400 800 395 V 430 C 680 440 620 460 600 500 Z" fill="#e9d6a8"/>
+  <!-- tree -->
+  <rect x="96" y="200" width="30" height="150" rx="6" fill="#8b5a2b"/>
+  <g fill="#3c9a3c"><circle cx="111" cy="170" r="70"/><circle cx="58" cy="220" r="48"/><circle cx="166" cy="220" r="48"/><circle cx="111" cy="235" r="45"/></g>
+  <g fill="#2f7f2f"><circle cx="85" cy="150" r="10"/><circle cx="140" cy="200" r="9"/><circle cx="70" cy="230" r="8"/></g>
+  <!-- flowers -->
+  <g><circle cx="230" cy="440" r="7" fill="#ff6b9a"/><circle cx="260" cy="465" r="7" fill="#ffd23f"/><circle cx="700" cy="470" r="7" fill="#ff6b9a"/><circle cx="60" cy="460" r="7" fill="#b583ff"/></g>
+  <!-- boy -->
+  <g stroke-linecap="round">
+    <line x1="350" y1="342" x2="346" y2="418" stroke="#f1c27d" stroke-width="15"/>
+    <ellipse cx="340" cy="424" rx="18" ry="9" fill="#2b2d42"/>
+    <line x1="374" y1="340" x2="428" y2="396" stroke="#f1c27d" stroke-width="15"/>
+    <ellipse cx="436" cy="402" rx="18" ry="9" fill="#2b2d42" transform="rotate(40 436 402)"/>
+    <rect x="330" y="310" width="60" height="34" rx="8" fill="#1d3557"/>
+    <line x1="336" y1="262" x2="304" y2="300" stroke="#f1c27d" stroke-width="12"/>
+    <line x1="384" y1="262" x2="420" y2="282" stroke="#f1c27d" stroke-width="12"/>
+    <rect x="328" y="246" width="64" height="72" rx="16" fill="#e63946"/>
+    <circle cx="360" cy="214" r="31" fill="#f1c27d"/>
+    <path d="M329 210 Q 330 178 362 180 Q 392 182 391 208 Q 378 194 360 196 Q 342 196 329 210 Z" fill="#4a2c17"/>
+    <circle cx="350" cy="216" r="3.5" fill="#222"/><circle cx="372" cy="216" r="3.5" fill="#222"/>
+    <path d="M349 228 Q 361 238 373 228" stroke="#a0522d" stroke-width="3" fill="none"/>
+  </g>
+  <!-- ball -->
+  <circle cx="476" cy="414" r="23" fill="#fff" stroke="#222" stroke-width="2"/>
+  <polygon points="476,404 485,411 482,421 470,421 467,411" fill="#222"/>
+  <g stroke="#222" stroke-width="2"><line x1="476" y1="404" x2="476" y2="392"/><line x1="485" y1="411" x2="497" y2="407"/><line x1="482" y1="421" x2="490" y2="432"/><line x1="470" y1="421" x2="462" y2="432"/><line x1="467" y1="411" x2="455" y2="407"/></g>
+  <!-- dog -->
+  <g stroke-linecap="round">
+    <path d="M548 392 Q 520 360 530 340" stroke="#c68642" stroke-width="9" fill="none"/>
+    <line x1="570" y1="410" x2="552" y2="442" stroke="#c68642" stroke-width="11"/>
+    <line x1="590" y1="414" x2="585" y2="446" stroke="#c68642" stroke-width="11"/>
+    <line x1="628" y1="412" x2="648" y2="440" stroke="#c68642" stroke-width="11"/>
+    <line x1="640" y1="406" x2="668" y2="428" stroke="#c68642" stroke-width="11"/>
+    <ellipse cx="598" cy="398" rx="58" ry="26" fill="#c68642"/>
+    <circle cx="660" cy="372" r="25" fill="#c68642"/>
+    <ellipse cx="684" cy="380" rx="16" ry="11" fill="#e0a86a"/>
+    <circle cx="697" cy="376" r="5" fill="#222"/>
+    <circle cx="662" cy="364" r="4" fill="#222"/>
+    <ellipse cx="645" cy="372" rx="9" ry="18" fill="#8d5524" transform="rotate(20 645 372)"/>
+    <path d="M684 390 Q 690 402 682 404" stroke="#ff6b81" stroke-width="5" fill="none"/>
+  </g>
+</svg>

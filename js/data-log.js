@@ -49,7 +49,7 @@
       var area = SG.$('#print-area');
       area.innerHTML = '';
       area.append(el('h1', {}, SG.biString(lesson.title)),
-        el('p', { class: 'print-scene', text: lesson.scene || '' }),
+        SG.safeImage(lesson.image) ? el('img', { class: 'print-img', src: SG.safeImage(lesson.image), alt: '' }) : el('p', { class: 'print-scene', text: lesson.scene || '' }),
         SG.Chart.render(lesson.id));
       window.print();
     },

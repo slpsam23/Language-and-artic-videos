@@ -342,6 +342,9 @@
     SG.$('#back-home').addEventListener('click', function () { Runner.stop(); show('home'); });
 
     syncHeader();
+    SG.$('#app-version').textContent = SG.VERSION;
+    checkForUpdate();
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) checkForUpdate(); });
 
     // Shared lesson link: index.html#lesson=...
     var m = location.hash.match(/lesson=([\w-]+)/);
@@ -359,6 +362,19 @@
     }
     show('home');
   }
+
+  /* Browsers (especially iPad home-screen apps) can keep an old copy. Ask the
+     site which version is live and offer a reload if it's newer. */
+  function checkForUpdate() {
+    if (location.protocol === 'file:' || !window.fetch) return;
+    fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (j && j.version && j.version !== SG.VERSION) SG.$('#update-banner').hidden = false;
+      }).catch(function () { /* offline: keep using this copy */ });
+  }
+  SG.$('#update-reload') && SG.$('#update-reload').addEventListener('click', function () {
+    location.replace(location.pathname + '?v=' + Date.now() + location.hash);
+  });
 
   SG.App = {
     show: show,
