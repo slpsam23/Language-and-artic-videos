@@ -58,6 +58,14 @@ Then fix any differences with the button editor.
 ## Articulation tips
 
 - **Sound in isolation:** the computer voice can't say a sound by itself (it says "ess" for *s*). So press **🎙️ Record your model** once per sound. Your recording is saved on that device and plays as the model every time. **🐢 In syllables** plays the sound in syllables instead.
+- **Position and length (Words):**
+  - **Syllables:** 1, 2, 3, 4, or 5 syllables.
+  - **Target sound + Position:** beginning / middle / end. Examples: /k/ at the end of 1-syllable words (*book, duck, cake*), or rr fuerte in the middle (*perro, carro*).
+  - Filters combine with **Word type**. "Everyday words" adds common 1–2 syllable words in both languages.
+- **Position and length (Syllables):**
+  - **Position** sets the shape: beginning *sa*, middle *asa*, end *as*.
+  - **Length** gives chains of 1–3 syllables: *sa-se-si*.
+  - Positions a sound can't take are hidden. For example, Spanish tap r only shows *middle* and *end*.
 - **Tap vs. trill:** choose Español → *Target sound* → **r suave – tap** or **rr fuerte – trill**. Words are sorted by Spanish rules: trill at the start of a word, after *n/l/s*, or written *rr*; tap everywhere else.
 - **In lessons:** in the builder's *Articulation word* activity, choose **Practice** for each language: *Sound in isolation* (pick the sound, e.g. rr fuerte), CVC/VCV/CVCV, 3/4/5 syllables, clusters, or R words, with an optional highlighted target sound.
 - **Add your own words** in `js/data/artic-more.js` (multisyllabic, clusters, R words) or `js/data/artic-words.js` (CVC, VCV, CVCV).

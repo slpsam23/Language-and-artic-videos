@@ -105,11 +105,41 @@
     w('torre', '🗼', ['to', 'rre'], 'r-trill'), w('gorra', '🧢', ['go', 'rra'], 'r-trill')
   ];
 
+  /* ---------- Everyday 1- and 2-syllable words (for position + length practice) ---------- */
+  en.everyday = [
+    w('sock', '🧦', ['sock']), w('cake', '🎂', ['cake']), w('bike', '🚲', ['bike']), w('kite', '🪁', ['kite']),
+    w('duck', '🦆', ['duck']), w('sheep', '🐑', ['sheep']), w('shoe', '👟', ['shoe']), w('cheese', '🧀', ['cheese']),
+    w('juice', '🧃', ['juice']), w('moon', '🌙', ['moon']), w('nose', '👃', ['nose']), w('soap', '🧼', ['soap']),
+    w('leaf', '🍃', ['leaf']), w('horse', '🐴', ['horse']), w('mouse', '🐭', ['mouse']), w('house', '🏠', ['house']),
+    w('key', '🔑', ['key']), w('egg', '🥚', ['egg']), w('ice', '🧊', ['ice']), w('bath', '🛁', ['bath']),
+    w('monkey', '🐒', ['mon', 'key']), w('pencil', '✏️', ['pen', 'cil']), w('tiger', '🐯', ['ti', 'ger']),
+    w('spider', '🕷️', ['spi', 'der']), w('soccer', '⚽', ['soc', 'cer']), w('butter', '🧈', ['but', 'ter']),
+    w('doctor', '🧑‍⚕️', ['doc', 'tor']), w('sister', '👧', ['sis', 'ter']), w('letter', '✉️', ['let', 'ter']),
+    w('robot', '🤖', ['ro', 'bot']), w('lemon', '🍋', ['lem', 'on']), w('pizza', '🍕', ['piz', 'za']),
+    w('candy', '🍬', ['can', 'dy']), w('muffin', '🧁', ['muf', 'fin']), w('taco', '🌮', ['ta', 'co']),
+    w('sofa', '🛋️', ['so', 'fa']), w('seven', '7️⃣', ['sev', 'en']), w('kitten', '🐱', ['kit', 'ten']),
+    w('basket', '🧺', ['bas', 'ket']), w('jacket', '🧥', ['jack', 'et']), w('turtle', '🐢', ['tur', 'tle']),
+    w('puzzle', '🧩', ['puz', 'zle']), w('garden', '🌻', ['gar', 'den']), w('window', '🪟', ['win', 'dow']),
+    w('chicken', '🐔', ['chick', 'en']), w('shampoo', '🧴', ['sham', 'poo']), w('zipper', '🤐', ['zip', 'per']),
+    w('feather', '🪶', ['feath', 'er']), w('dinner', '🍽️', ['din', 'ner']), w('paper', '📄', ['pa', 'per'])
+  ];
+  es.everyday = [
+    w('rey', '👑', ['rey']), w('miel', '🍯', ['miel']), w('pie', '🦶', ['pie']), w('nuez', '🌰', ['nuez']),
+    w('queso', '🧀', ['que', 'so']), w('leche', '🥛', ['le', 'che']), w('lápiz', '✏️', ['lá', 'piz']),
+    w('silla', '🪑', ['si', 'lla']), w('llave', '🔑', ['lla', 've']), w('niño', '👦', ['ni', 'ño']),
+    w('zorro', '🦊', ['zo', 'rro']), w('jugo', '🧃', ['ju', 'go']), w('foca', '🦭', ['fo', 'ca']),
+    w('sapo', '🐸', ['sa', 'po']), w('dedo', '☝️', ['de', 'do']), w('nube', '☁️', ['nu', 'be']),
+    w('lobo', '🐺', ['lo', 'bo']), w('fuego', '🔥', ['fue', 'go']), w('huevo', '🥚', ['hue', 'vo']),
+    w('tigre', '🐯', ['ti', 'gre']), w('coche', '🚗', ['co', 'che']), w('beso', '💋', ['be', 'so']),
+    w('jabón', '🧼', ['ja', 'bón']), w('ratón', '🐭', ['ra', 'tón']), w('cuchara', '🥄', ['cu', 'cha', 'ra']),
+    w('cohete', '🚀', ['co', 'he', 'te']), w('guitarra', '🎸', ['gui', 'ta', 'rra']), w('gusano', '🪱', ['gu', 'sa', 'no'])
+  ];
+
   /* Word types shown in the Articulation tab, in order. cv = show C/V letters. */
   SG.ARTIC_TYPES = {
     cvc: { label: 'CVC', cv: true }, vcv: { label: 'VCV', cv: true }, cvcv: { label: 'CVCV', cv: true },
     multi3: { label: '3 syllables' }, multi4: { label: '4 syllables' }, multi5: { label: '5 syllables' },
-    clusters: { label: 'Consonant clusters' }, r: { label: 'R words' }
+    clusters: { label: 'Consonant clusters' }, r: { label: 'R words' }, everyday: { label: 'Everyday words' }
   };
   // Older code and lessons look labels up here.
   SG.SHAPES = {};

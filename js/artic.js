@@ -64,7 +64,7 @@
     opts = opts || {};
     var info = SG.ARTIC_TYPES[type] || { label: opts.label || type };
     var parts = item.parts && item.parts.length ? item.parts : [item.word];
-    var hl = SG.articHighlight(item, type, opts.sound);
+    var hl = SG.articHighlight(item, type, opts.sound, lang, opts.pos);
 
     var partsEl = el('div', { class: 'artic-parts' });
     parts.forEach(function (p, i) {
@@ -78,6 +78,10 @@
       info.label.split('').forEach(function (ch) { label.append(el('span', { class: ch === 'C' ? 'part-c' : 'part-v', text: ch })); });
     } else {
       label.append(el('span', { class: 'chip', text: info.label + (item.target ? ' · ' + soundLabel(item.target) : '') }));
+    }
+    if (type !== 'syl' && !/^multi/.test(type)) {
+      var n = SG.syllableCount(item);
+      label.append(el('span', { class: 'chip', text: n + (n === 1 ? ' syllable' : ' syllables') }));
     }
 
     var many = parts.length > 1 && !info.cv || type === 'cvcv';
@@ -155,32 +159,45 @@
   };
 
   /* ---------- Articulation tab ---------- */
+  var POS_LABEL = {
+    initial: SG.L('Beginning', 'Inicio'), medial: SG.L('Middle', 'Medio'), final: SG.L('End', 'Final')
+  };
   var state = {
-    lang: null, level: 'word', type: 'cvc', sound: '', list: [], index: 0,
+    lang: null, level: 'word', type: 'all', sound: '', pos: '', len: '', list: [], index: 0,
     tally: { correct: 0, approx: 0, incorrect: 0 }
   };
 
   function types() { return state.type === 'all' ? Object.keys(SG.ARTIC_TYPES) : [state.type]; }
 
+  function wordPool() {
+    var seen = {}, list = [];
+    types().forEach(function (ty) {
+      (SG.ARTIC[state.lang][ty] || []).forEach(function (it) {
+        if (state.len && SG.syllableCount(it) !== Number(state.len)) return;
+        list.push({ kind: 'word', item: it, type: ty });
+      });
+    });
+    // A word can be in two lists (perro is CVCV and an R word); keep one, preferring the one with a target.
+    list.sort(function (a, b) { return (b.item.target ? 1 : 0) - (a.item.target ? 1 : 0); });
+    return list.filter(function (x) { var k = SG.norm(x.item.word); if (seen[k]) return false; seen[k] = true; return true; });
+  }
+
   function buildList() {
     var list = [];
-    if (state.level === 'iso' || state.level === 'syl') {
+    if (state.level === 'iso') {
+      SG.ISO_SOUNDS[state.lang].forEach(function (snd) {
+        if (!state.sound || snd.id === state.sound) list.push({ kind: 'iso', sound: snd });
+      });
+    } else if (state.level === 'syl') {
       SG.ISO_SOUNDS[state.lang].forEach(function (snd) {
         if (state.sound && snd.id !== state.sound) return;
-        if (state.level === 'iso') list.push({ kind: 'iso', sound: snd });
-        else SG.isoSyllables(snd.id, state.lang).forEach(function (sy) { list.push({ kind: 'syl', sound: snd, syl: sy }); });
+        var d = SG.syllableDrill(snd.id, state.lang, state.pos || 'initial', Number(state.len) || 1);
+        d.items.forEach(function (seq) { list.push({ kind: 'syl', sound: snd, seq: seq, pos: d.pos }); });
       });
     } else {
-      types().forEach(function (ty) {
-        (SG.ARTIC[state.lang][ty] || []).forEach(function (it) {
-          if (!state.sound || SG.articSounds(it, ty, state.lang).indexOf(state.sound) !== -1) list.push({ kind: 'word', item: it, type: ty });
-        });
-      });
-      // A word can be in two lists (perro is CVCV and an R word); show it once, keeping its target.
-      var seen = {};
-      list = list.filter(function (x) { return x.item.target; }).concat(list.filter(function (x) { return !x.item.target; }))
-        .filter(function (x) { var k = SG.norm(x.item.word); if (seen[k]) return false; seen[k] = true; return true; });
-      list = SG.shuffle(list);
+      list = SG.shuffle(wordPool().filter(function (x) {
+        return SG.articHasTarget(x.item, state.lang, state.sound, state.pos);
+      }));
     }
     state.list = list;
     state.index = 0;
@@ -189,21 +206,24 @@
   function soundOptions() {
     if (state.level !== 'word') return SG.ISO_SOUNDS[state.lang].map(function (s) { return [s.id, s.name]; });
     var set = {};
-    types().forEach(function (ty) {
-      (SG.ARTIC[state.lang][ty] || []).forEach(function (it) {
-        SG.articSounds(it, ty, state.lang).forEach(function (s) { set[s] = true; });
-      });
-    });
+    wordPool().forEach(function (x) { SG.articSounds(x.item, x.type, state.lang).forEach(function (s) { set[s] = true; }); });
+    var iso = {};
+    SG.ISO_SOUNDS[state.lang].forEach(function (s) { iso[s.id] = s.name; });
     return Object.keys(set).sort(function (a, b) {
       var ra = /^r-|^r$/.test(a), rb = /^r-|^r$/.test(b);
-      return ra === rb ? a.localeCompare(b) : ra ? -1 : 1;   // R targets first
-    }).map(function (s) { return [s, soundLabel(s)]; });
+      var ca = a.replace(/^-/, '').length > 2 || /^-/.test(a) || (a.length === 2 && !iso[a]);
+      var cb = b.replace(/^-/, '').length > 2 || /^-/.test(b) || (b.length === 2 && !iso[b]);
+      if (ra !== rb) return ra ? -1 : 1;          // R targets first
+      if (ca !== cb) return ca ? 1 : -1;          // then single sounds, then clusters
+      return a.localeCompare(b);
+    }).map(function (s) { return [s, iso[s] || soundLabel(s)]; });
   }
 
   function skillName(cur) {
     if (cur.kind === 'iso') return 'Artic – isolation ' + cur.sound.name;
-    if (cur.kind === 'syl') return 'Artic – syllables ' + cur.sound.name;
-    return 'Artic – ' + SG.ARTIC_TYPES[cur.type].label + (state.sound ? ' ' + soundLabel(state.sound) : '');
+    if (cur.kind === 'syl') return 'Artic – syllables ' + cur.sound.name + ' ' + cur.pos + (cur.seq.length > 1 ? ', ' + cur.seq.length + ' syl' : '');
+    return 'Artic – words' + (state.sound ? ' ' + soundLabel(state.sound) : '') + (state.pos ? ' ' + state.pos : '') +
+      (state.len ? ', ' + state.len + ' syl' : '') + (state.type !== 'all' ? ' (' + SG.ARTIC_TYPES[state.type].label + ')' : '');
   }
 
   SG.Artic = {
@@ -212,29 +232,47 @@
       if (!state.list.length) buildList();
       root.innerHTML = '';
       var rerender = function () { SG.Artic.render(root); };
-      var reset = function () { state.sound = ''; buildList(); rerender(); };
+      var rebuild = function () { buildList(); rerender(); };
+      var L = state.lang;
+      var opt = function (v, label, cur) { return el('option', { value: v, selected: String(cur) === String(v) }, label); };
+      var sel = function (key, options, after) {
+        return el('select', { onchange: function () { state[key] = this.value; if (after) after(); rebuild(); } },
+          options.map(function (o) { return opt(o[0], o[1], state[key]); }));
+      };
 
-      var langSel = el('select', { onchange: function () { state.lang = this.value; reset(); } },
-        el('option', { value: 'en', selected: state.lang === 'en' }, 'English'),
-        el('option', { value: 'es', selected: state.lang === 'es' }, 'Español'));
-      var levelSel = el('select', { onchange: function () { state.level = this.value; reset(); } },
-        [['iso', 'Sound in isolation'], ['syl', 'Syllables'], ['word', 'Words']].map(function (o) {
-          return el('option', { value: o[0], selected: state.level === o[0] }, o[1]);
-        }));
-      var typeSel = state.level === 'word' ? el('select', { onchange: function () { state.type = this.value; reset(); } },
-        Object.keys(SG.ARTIC_TYPES).map(function (k) {
-          return el('option', { value: k, selected: state.type === k }, SG.ARTIC_TYPES[k].label);
-        }), el('option', { value: 'all', selected: state.type === 'all' }, 'All word types')) : null;
-      var soundSel = el('select', { onchange: function () { state.sound = this.value; buildList(); rerender(); } },
-        el('option', { value: '' }, state.level === 'word' ? 'Any sound' : 'All sounds'),
-        soundOptions().map(function (s) { return el('option', { value: s[0], selected: state.sound === s[0] }, s[1]); }));
-
-      root.append(el('div', { class: 'card row wrap' },
-        el('label', {}, 'Language ', langSel),
-        el('label', {}, 'Practice ', levelSel),
-        typeSel ? el('label', {}, 'Word type ', typeSel) : null,
-        el('label', {}, 'Target sound ', soundSel),
-        state.level === 'word' ? el('button', { class: 'btn', type: 'button', onclick: function () { buildList(); rerender(); } }, '🔀 Shuffle') : null));
+      var controls = [
+        el('label', {}, 'Language ', sel('lang', [['en', 'English'], ['es', 'Español']], function () { state.sound = ''; })),
+        el('label', {}, 'Practice ', sel('level', [['iso', 'Sound in isolation'], ['syl', 'Syllables'], ['word', 'Words']], function () {
+          state.pos = ''; state.len = '';
+        }))
+      ];
+      var posChoices = function (anyLabel) {
+        var ps = state.level === 'syl' && state.sound ? SG.drillPositions(state.sound, L) : ['initial', 'medial', 'final'];
+        return (anyLabel ? [['', anyLabel]] : []).concat(ps.map(function (p) { return [p, SG.biString(POS_LABEL[p])]; }));
+      };
+      if (state.level === 'word') {
+        controls.push(
+          el('label', {}, 'Word type ', sel('type', [['all', 'All word types']].concat(Object.keys(SG.ARTIC_TYPES).map(function (k) {
+            return [k, SG.ARTIC_TYPES[k].label];
+          })), function () { state.sound = ''; })),
+          el('label', {}, 'Syllables ', sel('len', [['', 'Any length'], ['1', '1 syllable'], ['2', '2 syllables'], ['3', '3 syllables'], ['4', '4 syllables'], ['5', '5 syllables']])),
+          el('label', {}, 'Target sound ', sel('sound', [['', 'Any sound']].concat(soundOptions()))),
+          el('label', {}, 'Position ', sel('pos', posChoices('Any position'))));
+      } else {
+        controls.push(el('label', {}, 'Target sound ', sel('sound', [['', 'All sounds']].concat(soundOptions()), function () {
+          if (state.level === 'syl' && state.pos && state.sound && !SG.drillPositionOk(state.sound, L, state.pos)) state.pos = '';
+        })));
+        if (state.level === 'syl') {
+          controls.push(
+            el('label', {}, 'Position ', sel('pos', posChoices())),
+            el('label', {}, 'Length ', sel('len', [['1', '1 syllable'], ['2', '2 syllables'], ['3', '3 syllables']])));
+        }
+      }
+      if (state.level !== 'iso') controls.push(el('button', { class: 'btn', type: 'button', onclick: rebuild }, '🔀 Shuffle'));
+      root.append(el('div', { class: 'card row wrap artic-controls' }, controls));
+      if (state.level === 'word' && state.pos && !state.sound) {
+        root.append(el('p', { class: 'muted', text: 'Pick a target sound to practice it at the ' + SG.pick(POS_LABEL[state.pos], 'en').toLowerCase() + ' of words.' }));
+      }
 
       var t = state.tally, total = t.correct + t.approx + t.incorrect;
       var goal = SG.settings.articGoal || 20;
@@ -248,15 +286,15 @@
         } }, 'Reset tally')));
 
       if (!state.list.length) {
-        root.append(el('p', { class: 'card muted', text: 'No words match that filter yet. Try “All word types”, or add words in js/data/artic-more.js.' }));
+        root.append(el('p', { class: 'card muted', text: 'No words match all of those choices yet. Try “Any length”, another position, or “All word types” — or add words in js/data/artic-more.js.' }));
         return;
       }
       var cur = state.list[state.index];
       function onScore(score) {
         state.tally[score]++;
         SG.Log.add({
-          type: 'artic', skill: skillName(cur), lang: state.lang, lesson: 'Articulation drill',
-          prompt: cur.kind === 'iso' ? cur.sound.name : cur.kind === 'syl' ? cur.syl : cur.item.word,
+          type: 'artic', skill: skillName(cur), lang: L, lesson: 'Articulation drill',
+          prompt: cur.kind === 'iso' ? cur.sound.name : cur.kind === 'syl' ? cur.seq.join('-') : cur.item.word,
           response: score, result: score === 'approx' ? 'cued' : score
         });
         if (score !== 'incorrect') state.index = (state.index + 1) % state.list.length;
@@ -265,9 +303,15 @@
         rerender();
       }
       var card;
-      if (cur.kind === 'iso') card = SG.IsoCard(cur.sound, state.lang, { onScore: onScore });
-      else if (cur.kind === 'syl') card = SG.ArticCard({ word: cur.syl, emoji: cur.sound.emoji, parts: [cur.syl] }, 'syl', state.lang, { onScore: onScore, label: 'Syllable' });
-      else card = SG.ArticCard(cur.item, cur.type, state.lang, { onScore: onScore, sound: state.sound });
+      if (cur.kind === 'iso') {
+        card = SG.IsoCard(cur.sound, L, { onScore: onScore });
+      } else if (cur.kind === 'syl') {
+        card = SG.ArticCard({ word: cur.seq.join('-'), emoji: cur.sound.emoji, parts: cur.seq }, 'syl', L, {
+          onScore: onScore, label: (cur.seq.length > 1 ? cur.seq.length + ' syllables' : 'Syllable') + ' · ' + cur.sound.name + ' · ' + SG.pick(POS_LABEL[cur.pos], 'en')
+        });
+      } else {
+        card = SG.ArticCard(cur.item, cur.type, L, { onScore: onScore, sound: state.sound, pos: state.pos });
+      }
 
       root.append(el('div', { class: 'artic-stage' },
         el('button', { class: 'btn nav', type: 'button', title: 'Previous', onclick: function () {
