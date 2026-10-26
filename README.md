@@ -9,7 +9,7 @@ It targets:
 | **WH comprehension** (who/what/where/when/why) answered in **3–5 words** | The student builds a sentence on an AAC board set up like their own (TouchChat, LAMP, TD Snap, Proloquo2Go) using a **predictable chart frame** ("The ___ is kicking." / "El ___ está pateando."). The answer and the 3–5 word length are checked automatically. |
 | **Binary questions** | Big yes/no or this-or-that picture buttons ("Is it a ball or a book?"). |
 | **Formulating questions** from a picture scene | "Ask a WHERE question about the picture." The student must start with a question word and use 3–5 words ("Where is the ball?" / "¿Dónde está la pelota?"). |
-| **Articulation: CVC, VCV, CVCV** | Word cards in English and Spanish with a spoken model, slow syllable model, record and play back, and clinician scoring (correct / close / try again). |
+| **Articulation** | Practice from **sound in isolation** → **syllables** → **words** in English and Spanish. Word types: CVC, VCV, CVCV, **3, 4 and 5 syllables**, **consonant clusters** (s-, l-, r-clusters, 3-consonant and final clusters; Spanish bl, br, pl, tr…), and **R words** (Spanish **tap r suave** and **trill rr fuerte**; English beginning and vocalic R). Filter by target sound, which is highlighted on the card. Each card has a spoken model, a slow syllable model, record and play back, and clinician scoring (correct / close / try again). |
 | **Predictable chart writing** | Every correct sentence is added to the lesson's chart with the student's name, so a group builds a chart together. It can be printed. |
 | **Data collection** | Every trial is saved with independent / with cues / incorrect. A summary by skill is shown and can be exported as a CSV for IEP progress notes. |
 
@@ -43,6 +43,24 @@ In **⚙️ → Customize the board → 📸 Fill the board from screenshots or 
 - **Typed list (no AI):** one line per row of buttons, separated by commas. You can also paste from a spreadsheet.
 
 Then fix any differences with the button editor.
+
+## Articulation tips
+
+- **Sound in isolation:** the computer voice can't say a sound by itself (it says "ess" for *s*). So press **🎙️ Record your model** once per sound. Your recording is saved on that device and plays as the model every time. **🐢 In syllables** plays the sound in syllables instead.
+- **Tap vs. trill:** choose Español → *Target sound* → **r suave – tap** or **rr fuerte – trill**. Words are sorted by Spanish rules: trill at the start of a word, after *n/l/s*, or written *rr*; tap everywhere else.
+- **Add your own words** in `js/data/artic-more.js` (multisyllabic, clusters, R words) or `js/data/artic-words.js` (CVC, VCV, CVCV).
+
+## Real pictures instead of emoji
+
+In **🛠️ Build**, press **📷 Upload picture** for the lesson's scene. Each question can also have its own picture, so a story can have a new scene for every question. Pictures are shrunk automatically and saved inside the lesson. Video lessons use the paused video as the picture.
+
+Where to get pictures:
+- **Your own photos.** On an iPad, the upload button can open the camera or photo library.
+- **Screenshots** from the YouTube video.
+- **An AI picture maker.** Claude writes a picture description with each lesson (shown under the picture field). Copy it into a free image tool such as Microsoft Designer / Copilot, Google Gemini, ChatGPT, Canva, or Adobe Express, then upload the result. Claude itself doesn't make pictures.
+- **Your district's symbol or scene library** (Boardmaker, SymbolStix, etc.), if you have a license.
+
+Uploaded pictures aren't included in share links, because they would make the link too long. Use **⬇️ Export JSON** to share lessons with pictures.
 
 ## How YouTube makes it dynamic
 

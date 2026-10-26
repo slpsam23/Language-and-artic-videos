@@ -119,6 +119,7 @@
 
     watchPanel: function () {
       board.hide();
+      SG.$('#scene-card').hidden = true;   // the video is the picture while watching
       var panel = SG.$('#activity-panel');
       panel.innerHTML = '';
       panel.append(el('div', { class: 'watch' },
@@ -150,6 +151,11 @@
 
     show: function (act, opts) {
       Runner.busy = true;
+      // A question can bring its own picture; otherwise show the lesson's scene (or the paused video).
+      var scene = SG.$('#scene-card');
+      var hasVideo = !!Runner.player;
+      if (act.image) { renderScene(scene, { image: act.image }); scene.hidden = false; }
+      else { renderScene(scene, Runner.lesson); scene.hidden = hasVideo; }
       var panel = SG.$('#activity-panel');
       panel.innerHTML = '';
       var box = el('div', { class: 'activity type-' + act.type });
@@ -223,7 +229,7 @@
 
   function renderScene(root, lesson) {
     root.innerHTML = '';
-    if (lesson.image) root.append(el('img', { src: lesson.image, alt: SG.biString(lesson.description) || 'Picture scene' }));
+    if (SG.safeImage(lesson.image)) root.append(el('img', { src: SG.safeImage(lesson.image), alt: SG.biString(lesson.description) || 'Picture scene' }));
     else root.append(el('div', { class: 'scene-emoji', role: 'img', 'aria-label': SG.biString(lesson.description) || 'Picture scene', text: lesson.scene || '🖼️' }));
     if (lesson.description && (lesson.description.en || lesson.description.es)) {
       root.append(el('div', { class: 'scene-caption' }, SG.biText(lesson.description),

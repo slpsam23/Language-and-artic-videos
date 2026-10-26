@@ -149,6 +149,40 @@ window.SG = window.SG || {};
     toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2600);
   };
 
+  /* Shrink an uploaded picture so lessons stay small enough to save in the browser. */
+  SG.compressImage = function (file, maxSide, quality) {
+    maxSide = maxSide || 1000;
+    return new Promise(function (resolve, reject) {
+      if (!file || !/^image\//.test(file.type)) return reject(new Error('Not an image'));
+      var reader = new FileReader();
+      reader.onerror = function () { reject(reader.error); };
+      reader.onload = function () {
+        var img = new Image();
+        img.onerror = function () { reject(new Error('Could not read that picture')); };
+        img.onload = function () {
+          var scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+          var c = document.createElement('canvas');
+          c.width = Math.round(img.width * scale);
+          c.height = Math.round(img.height * scale);
+          var ctx = c.getContext('2d');
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, c.width, c.height);
+          ctx.drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/jpeg', quality || 0.8));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+  /* Pictures may be web links or pictures uploaded into the lesson. */
+  SG.safeImage = function (src) {
+    src = String(src || '');
+    if (/^https?:\/\//i.test(src)) return src;
+    if (/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(src) && src.length < 3000000) return src;
+    return '';
+  };
+
   SG.download = function (filename, text, type) {
     var blob = new Blob([text], { type: type || 'application/json' });
     var a = SG.el('a', { href: URL.createObjectURL(blob), download: filename });

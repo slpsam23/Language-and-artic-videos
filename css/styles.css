@@ -325,3 +325,9 @@ tr.result-cued td:last-child { color: var(--warn); font-weight: 700; }
 .import-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 820px) { .import-cols { grid-template-columns: 1fr; } }
 .import-col ol { padding-left: 1.2em; margin: 6px 0; }
+
+/* ---------- Articulation targets ---------- */
+.artic-part.part-target { outline: 3px solid var(--bad); background: #fff3c4; color: #7a2e00; }
+.iso-symbol { font-size: 4.5rem; letter-spacing: .05em; }
+.iso-cue { font-size: 1.15rem; max-width: 30em; margin: 8px auto; }
+.pic-thumb { width: 96px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }

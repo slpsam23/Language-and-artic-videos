@@ -30,14 +30,14 @@
       var choice = function (c) {
         return { en: String(c.en || ''), es: String(c.es || ''), emoji: String(c.emoji || ''), correct: !!c.correct };
       };
-      var image = String(raw.image || '');
       return {
         id: String(raw.id || SG.uid('lesson')),
         title: txt(raw.title || 'Untitled'),
         description: txt(raw.description || ''),
         video: String(raw.video || raw.videoId || ''),
         scene: String(raw.scene || ''),
-        image: /^https?:\/\//i.test(image) ? image : '',
+        image: SG.safeImage(raw.image),
+        picturePrompt: String(raw.picturePrompt || raw.picture_prompt || ''),
         activities: raw.activities.filter(function (a) { return a && a.type; }).map(function (a) {
           var out = { type: String(a.type) };
           if (typeof a.at === 'number' && a.at >= 0) out.at = a.at;
@@ -46,6 +46,7 @@
           if (a.cue) out.cue = String(a.cue);
           if (Number(a.level) >= 1 && Number(a.level) <= 4) out.level = Number(a.level);
           if (a.emoji) out.emoji = String(a.emoji);
+          if (SG.safeImage(a.image)) out.image = SG.safeImage(a.image);
           if (Array.isArray(a.choices)) out.choices = a.choices.map(choice);
           if (a.parts) out.parts = { en: [].concat(a.parts.en || []).map(String), es: [].concat(a.parts.es || []).map(String) };
           ['min', 'max', 'trials'].forEach(function (k) { if (Number(a[k]) > 0) out[k] = Number(a[k]); });
@@ -54,6 +55,12 @@
       };
     },
     encodeShare: function (lesson) {
+      var stripped = false;
+      lesson = JSON.parse(JSON.stringify(lesson));
+      [lesson].concat(lesson.activities).forEach(function (o) {
+        if (o.image && o.image.indexOf('data:') === 0) { delete o.image; stripped = true; }
+      });
+      if (stripped) SG.toast('Uploaded pictures aren’t included in share links. Use Export JSON to share them.');
       var bytes = new TextEncoder().encode(JSON.stringify(lesson));
       var bin = '';
       bytes.forEach(function (b) { bin += String.fromCharCode(b); });
@@ -110,6 +117,31 @@
       options.map(function (o) { return el('option', { value: o[0], selected: obj[key] === o[0] }, o[1]); }));
   }
 
+  /* Upload a picture (shrunk and kept in the lesson) or paste a link. */
+  function pictureField(obj, label) {
+    var wrap = el('div', { class: 'field' });
+    function draw() {
+      wrap.innerHTML = '';
+      var file = el('input', { type: 'file', accept: 'image/*', hidden: true, onchange: function () {
+        var f = this.files[0];
+        if (!f) return;
+        SG.compressImage(f).then(function (data) { obj.image = data; draw(); })
+          .catch(function () { SG.toast('Could not use that picture. Try a JPG or PNG.'); });
+      } });
+      var link = el('input', { type: 'text', class: 'grow', placeholder: 'or paste a picture link: https://…',
+        value: obj.image && obj.image.indexOf('data:') !== 0 ? obj.image : '',
+        oninput: function () { obj.image = this.value.trim(); } });
+      wrap.append(el('div', { class: 'field-label', text: label }),
+        el('div', { class: 'row wrap' },
+          obj.image && SG.safeImage(obj.image) ? el('img', { class: 'pic-thumb', src: SG.safeImage(obj.image), alt: 'Picture preview' }) : null,
+          el('button', { class: 'btn', type: 'button', onclick: function () { file.click(); } }, '📷 Upload picture'),
+          obj.image ? el('button', { class: 'btn small', type: 'button', onclick: function () { obj.image = ''; draw(); } }, 'Remove') : null,
+          file, link));
+    }
+    draw();
+    return wrap;
+  }
+
   function choicesEditor(act, opts) {
     opts = opts || {};
     var wrap = el('div', { class: 'field' });
@@ -161,6 +193,7 @@
     var form = el('div', { class: 'card act-form' });
     form.append(el('h3', {}, (editing.index == null ? 'New ' : 'Edit ') + typeName(act.type)));
     form.append(timeField(act));
+    if (act.type !== 'artic') form.append(pictureField(act, 'Picture for this question (optional — e.g. a different scene for each question)'));
     form.append(el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'Language level' }),
       el('select', { onchange: function () { if (Number(this.value)) act.level = Number(this.value); else delete act.level; } },
         el('option', { value: 0, selected: !act.level }, 'All levels'),
@@ -335,10 +368,14 @@
         el('div', { class: 'row wrap' },
           input(draft, 'video', { placeholder: 'https://www.youtube.com/watch?v=…', class: 'grow' }),
           el('button', { class: 'btn primary', type: 'button', onclick: function () { loadPreview(root); } }, 'Load video'))),
-      el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'Picture scene: emojis and/or an image link (used when there is no video, and on the printed chart)' }),
-        el('div', { class: 'row wrap' },
-          input(draft, 'scene', { placeholder: '🌳👦⚽🐕', class: 'emoji-wide' }),
-          input(draft, 'image', { placeholder: 'https://…/picture.png', class: 'grow' })))));
+      pictureField(draft, 'Picture scene (shown when there is no video, and on the printed chart). Upload a photo or drawing, or paste a link.'),
+      draft.picturePrompt ? el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'Need a picture? Paste this description into an AI picture maker (see the README), then upload the picture above.' }),
+        el('div', { class: 'row wrap' }, el('span', { class: 'muted grow', text: draft.picturePrompt }),
+          el('button', { class: 'btn small', type: 'button', onclick: function () {
+            if (navigator.clipboard) navigator.clipboard.writeText(draft.picturePrompt).then(function () { SG.toast('Copied ✔'); });
+          } }, '📋 Copy'))) : null,
+      el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'Emoji fallback (used only when there is no picture)' }),
+        input(draft, 'scene', { placeholder: '🌳👦⚽🐕', class: 'emoji-wide' }))));
 
     var actsBox = SG.$('#b-acts', root);
     actsBox.innerHTML = '';
@@ -364,7 +401,7 @@
       el('button', { class: 'btn primary big', type: 'button', onclick: function () {
         if (!draft.title.en && !draft.title.es) { SG.toast('Give the lesson a title.'); return; }
         var clean = SG.Lessons.sanitize(draft);
-        if (!SG.Lessons.save(clean)) { SG.toast('Could not save (browser storage blocked).'); return; }
+        if (!SG.Lessons.save(clean)) { SG.toast('Could not save: this browser’s storage is full or blocked. Try smaller or fewer uploaded pictures, or use picture links.'); return; }
         draft._isNew = false;
         SG.toast('Lesson saved ✔');
         if (SG.App) SG.App.refreshHome();

@@ -86,11 +86,56 @@
         rec.onstop = function () {
           if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
           var blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+          SG.Recorder.lastBlob = blob;
           rec = null;
           resolve(URL.createObjectURL(blob));
         };
         rec.stop();
       });
+    }
+  };
+
+  /* Clinician model recordings (e.g. a sound in isolation), kept on this device in IndexedDB. */
+  var dbPromise = null;
+  function db() {
+    if (dbPromise) return dbPromise;
+    dbPromise = new Promise(function (resolve, reject) {
+      if (!window.indexedDB) return reject(new Error('No IndexedDB'));
+      var req = indexedDB.open('sg-audio', 1);
+      req.onupgradeneeded = function () { req.result.createObjectStore('models'); };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+    return dbPromise;
+  }
+  SG.AudioStore = {
+    get: function (key) {
+      return db().then(function (d) {
+        return new Promise(function (resolve) {
+          var r = d.transaction('models').objectStore('models').get(key);
+          r.onsuccess = function () { resolve(r.result || null); };
+          r.onerror = function () { resolve(null); };
+        });
+      }).catch(function () { return null; });
+    },
+    put: function (key, blob) {
+      return db().then(function (d) {
+        return new Promise(function (resolve, reject) {
+          var tx = d.transaction('models', 'readwrite');
+          tx.objectStore('models').put(blob, key);
+          tx.oncomplete = function () { resolve(); };
+          tx.onerror = function () { reject(tx.error); };
+        });
+      });
+    },
+    remove: function (key) {
+      return db().then(function (d) {
+        return new Promise(function (resolve) {
+          var tx = d.transaction('models', 'readwrite');
+          tx.objectStore('models').delete(key);
+          tx.oncomplete = resolve; tx.onerror = resolve;
+        });
+      }).catch(function () {});
     }
   };
 })(window.SG);
