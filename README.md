@@ -28,6 +28,11 @@ In **🛠️ Build**, open **"Make a lesson with Claude from a YouTube video"**:
 3. **On a computer (Chrome or Edge):** press **📸 Turn on picture capture** and choose "This tab". Each mark then also saves a picture of the video. **📋 Copy picture sheet** (or Download) gives you one numbered image to attach in Claude, so Claude can see the scenes.
 4. **On an iPad:** screen capture isn't allowed. Take a screenshot (top button + volume up) at each mark and attach those in Claude instead.
 
+**Let Claude look it up:** in step 2 choose **🔎 Let Claude look it up** and type the video's title.
+- Claude can't watch videos, but with **Web search** turned on in Claude it finds a description or plot summary and writes questions from that. This works best for well-known videos (Pixar shorts, Simon's Cat…).
+- If it can't find the video, it says so instead of guessing.
+- It doesn't know exact times, so these questions are asked after the video. To pause during the video, open a question in the builder, play to the moment, and press **⏱ Use current video time**.
+
 You get a draft lesson that stops at the right times, in English and Spanish, with questions for each level. **Check every question before saving.** Only the video's words go to Claude, never student names or data.
 
 ### Language levels
