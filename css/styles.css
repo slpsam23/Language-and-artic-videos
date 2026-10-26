@@ -331,3 +331,7 @@ tr.result-cued td:last-child { color: var(--warn); font-weight: 700; }
 .iso-symbol { font-size: 4.5rem; letter-spacing: .05em; }
 .iso-cue { font-size: 1.15rem; max-width: 30em; margin: 8px auto; }
 .pic-thumb { width: 96px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+.moment-list { margin: 10px 0; }
+.moment-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.moment-time { width: 5.5em; font-variant-numeric: tabular-nums; }
+#ai-lesson-body .player-box { max-width: 720px; margin: 8px 0; }

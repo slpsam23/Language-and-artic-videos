@@ -22,6 +22,12 @@ In **🛠️ Build**, open **"Make a lesson with Claude from a YouTube video"**:
 3. Press **📋 Copy request**, open Claude, paste, and send. You can also attach screenshots of the video.
 4. Paste Claude's answer back and press **✨ Make the lesson**.
 
+**Silent videos (no transcript):** in step 2 choose **🤫 Silent video**:
+1. Press **▶ Load video** and play it.
+2. Tap **📍 Mark this moment** at each moment you want a question about, and type or dictate what happens ("the dog jumps in the pool"). The exact times are saved, so the finished lesson pauses there.
+3. **On a computer (Chrome or Edge):** press **📸 Turn on picture capture** and choose "This tab". Each mark then also saves a picture of the video. **📋 Copy picture sheet** (or Download) gives you one numbered image to attach in Claude, so Claude can see the scenes.
+4. **On an iPad:** screen capture isn't allowed. Take a screenshot (top button + volume up) at each mark and attach those in Claude instead.
+
 You get a draft lesson that stops at the right times, in English and Spanish, with questions for each level. **Check every question before saving.** Only the video's words go to Claude, never student names or data.
 
 ### Language levels
