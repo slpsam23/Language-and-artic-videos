@@ -13,6 +13,33 @@ It targets:
 | **Predictable chart writing** | Every correct sentence is added to the lesson's chart with the student's name, so a group builds a chart together. It can be printed. |
 | **Data collection** | Every trial is saved with independent / with cues / incorrect. A summary by skill is shown and can be exported as a CSV for IEP progress notes. |
 
+## During a lesson
+
+- **Lesson language:** when the student's board is bilingual, the lesson first asks **English, Español, or Both**. With one language, only that language is shown, spoken, and on the board. Tap the language button at the top of the lesson to change it. The student's setup isn't changed.
+- **📊 Tally** (next to the question):
+  - Live counts of ⭐ independent, 🤝 with cues, and 🔁 not yet, plus a breakdown by skill.
+  - **Add a trial** buttons let you tally by hand, with **↩ Undo**.
+  - Everything also goes to the 📊 Data tab and CSV.
+- **🤝 With cues…** opens the cue menu. You can use several cues; each one is saved with the trial (Data tab → Cues column).
+  - **👉 Point to it:** an arrow points to the answer in the picture or video. In the builder, tap the answer in the picture (or use *Set spot on the video*) to choose where it points.
+  - **✌️ Two choices:** big picture choices, the answer plus one other. Tapping one puts it in the sentence.
+  - **🔤 First words:** starts the sentence frame for the student.
+  - **💡 Model:** shows the whole answer.
+  - **🗣️ Say it:** says the answer for the student to repeat.
+  - **✨ Highlight** (yes/no and this-or-that): the right answer glows.
+
+  Tick **Start with these cues next time** to save those cues for that student and question. Next time they're applied automatically, so you can fade them later.
+
+  The menu also opens by itself after a wrong answer.
+
+### The predictable chart
+
+Predictable chart writing means everyone completes the same sentence starter.
+- Each WH question's frame ("The ___ is kicking.") is a chart. When a student builds a correct sentence, it's written on that chart with their name: "The boy is kicking. (Sam)". Questions students ask go on an "Our questions" chart.
+- Tap **🔊 Read** to read the chart aloud, and point to the words together.
+- **Print** it for the wall, and reread or cut up the sentences on later days.
+- Charts stay saved for each lesson until you clear them.
+
 ## ✨ Let Claude write the questions (works with Claude Pro)
 
 In **🛠️ Build**, open **"Make a lesson with Claude from a YouTube video"**:
@@ -64,7 +91,7 @@ Then fix any differences with the button editor.
   - Filters combine with **Word type**. "Everyday words" adds common 1–2 syllable words in both languages.
 - **Position and length (Syllables):**
   - **Position** sets the shape: beginning *sa*, middle *asa*, end *as*.
-  - **Length** gives chains of 1–3 syllables: *sa-se-si*.
+  - **Length** gives chains of 1–5 syllables: *sa-se-si-so-su*.
   - Positions a sound can't take are hidden. For example, Spanish tap r only shows *middle* and *end*.
 - **Tap vs. trill:** choose Español → *Target sound* → **r suave – tap** or **rr fuerte – trill**. Words are sorted by Spanish rules: trill at the start of a word, after *n/l/s*, or written *rr*; tap everywhere else.
 - **In lessons:** in the builder's *Articulation word* activity, choose **Practice** for each language: *Sound in isolation* (pick the sound, e.g. rr fuerte), CVC/VCV/CVCV, 3/4/5 syllables, clusters, or R words, with an optional highlighted target sound.

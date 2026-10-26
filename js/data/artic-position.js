@@ -173,7 +173,7 @@
     return v2 + (EN_FINAL[id] || cons);
   }
 
-  /* Drill items: length 1–3 syllables, e.g. sa · se · si. */
+  /* Drill items: length 1–5 syllables, e.g. sa · se · si. */
   SG.syllableDrill = function (id, lang, pos, len) {
     pos = SG.drillPositionOk(id, lang, pos) ? pos : SG.drillPositions(id, lang)[0];
     len = len || 1;

@@ -13,6 +13,7 @@
     var items = [];        // sentence: [{text, locked, slot}]
     var fringe = [];       // activity words [{text, emoji, pos}]
     var isQuestion = false;
+    var lock = null;       // lesson language: 'en' | 'es' locks the board to it
 
     var tilesEl = el('div', { class: 'sentence-tiles', 'aria-live': 'polite' });
     var langBtn = el('button', { class: 'btn lang-btn', type: 'button', title: 'Switch board language / Cambiar idioma' });
@@ -162,7 +163,7 @@
     }
 
     function renderAll() {
-      langBtn.hidden = profile.lang !== 'bi';
+      langBtn.hidden = profile.lang !== 'bi' || !!lock;
       langBtn.textContent = lang === 'en' ? '🇺🇸 EN' : '🇲🇽 ES';
       renderSentence(); renderFringe(); renderNav(); renderGrid();
     }
@@ -172,9 +173,13 @@
       onLang: null,
       get lang() { return lang; },
       setLang: function (l) {
-        if (profile.lang !== 'bi') l = profile.lang;   // single-language boards can't switch
+        if (lock) l = lock;
+        else if (profile.lang !== 'bi') l = profile.lang;   // single-language boards can't switch
         lang = l; items = []; pageId = 'home'; renderAll();
       },
+      /* Lock the board to the lesson's language (null = allow switching). */
+      setLock: function (l) { lock = l || null; api.setLang(lock || lang); },
+      addWord: function (word) { addWord(word); },
       setFringe: function (list) { fringe = list || []; renderFringe(); renderNav(); },
       /* Pre-fill the message window with a predictable-chart frame. */
       setFrame: function (list) { items = list.map(function (x) { return Object.assign({}, x); }); renderSentence(); },

@@ -14,8 +14,13 @@
       SG.store.set(LOG_KEY, list);
     },
     clear: function () { SG.store.set(LOG_KEY, []); },
+    removeLastManual: function () {
+      var list = SG.Log.all();
+      for (var i = list.length - 1; i >= 0; i--) { if (list[i].type === 'manual') { list.splice(i, 1); break; } }
+      SG.store.set(LOG_KEY, list);
+    },
     toCSV: function (list) {
-      var cols = ['ts', 'student', 'lesson', 'skill', 'lang', 'prompt', 'response', 'result', 'attempts'];
+      var cols = ['ts', 'student', 'lesson', 'skill', 'lang', 'prompt', 'response', 'result', 'cues', 'attempts'];
       var esc = function (v) { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
       return [cols.join(',')].concat(list.map(function (r) {
         return cols.map(function (c) { return esc(r[c]); }).join(',');
@@ -23,26 +28,58 @@
     }
   };
 
-  /* Predictable chart: one sentence per turn, with the student's name,
-     saved per lesson so a whole group can build the chart together. */
+  /* Predictable chart writing: everyone completes the same sentence starter
+     ("The ___ is kicking."). Each correct answer is written on that starter's
+     chart with the student's name, so a group builds the chart together and
+     rereads it. Saved per lesson on this device. */
+  function chartTitle(frame, lang) {
+    if (frame === '?') return lang === 'es' ? 'Nuestras preguntas' : 'Our questions';
+    if (!frame) return lang === 'es' ? 'Otras oraciones' : 'Other sentences';
+    return SG.formatSentence(frame.split(/\s+/).map(function (t) { return /^_+$/.test(t) ? '______' : t; }), lang, false);
+  }
+
   SG.Chart = {
     get: function (lessonId) { return SG.store.get('sg.chart.' + lessonId, []); },
-    add: function (lessonId, text, lang) {
+    add: function (lessonId, text, lang, frame) {
       var list = SG.Chart.get(lessonId);
-      list.push({ text: text, lang: lang, student: SG.settings.student || '', date: new Date().toLocaleDateString() });
+      list.push({ text: text, lang: lang, frame: frame || '', student: SG.settings.student || '', date: new Date().toLocaleDateString() });
       SG.store.set('sg.chart.' + lessonId, list);
+      var same = list.filter(function (r) { return r.frame === (frame || '') && r.lang === lang; }).length;
+      SG.toast(SG.L('⭐ Added to our chart (' + same + ' on this chart)', '⭐ Se agregó a nuestra tabla (' + same + ')'));
       if (SG.Chart.onChange) SG.Chart.onChange(lessonId);
     },
     clear: function (lessonId) {
       SG.store.remove('sg.chart.' + lessonId);
       if (SG.Chart.onChange) SG.Chart.onChange(lessonId);
     },
+    /* Group entries into charts by sentence starter and language. */
+    groups: function (lessonId) {
+      var groups = [], byKey = {};
+      SG.Chart.get(lessonId).forEach(function (r) {
+        var key = (r.frame || '') + '|' + r.lang;
+        if (!byKey[key]) { byKey[key] = { frame: r.frame || '', lang: r.lang, rows: [] }; groups.push(byKey[key]); }
+        byKey[key].rows.push(r);
+      });
+      return groups;
+    },
     render: function (lessonId) {
-      var list = SG.Chart.get(lessonId);
-      if (!list.length) return el('p', { class: 'muted', text: 'Sentences will appear here. / Las oraciones aparecerán aquí.' });
-      return el('ol', { class: 'chart-list' }, list.map(function (r) {
-        return el('li', { lang: r.lang }, el('span', { class: 'chart-text', text: r.text }),
-          r.student ? el('span', { class: 'chart-name', text: ' — ' + r.student }) : null);
+      var groups = SG.Chart.groups(lessonId);
+      if (!groups.length) {
+        return el('p', { class: 'muted', text: 'No sentences yet. When a student answers a question correctly, their sentence is written here with their name. / Aún no hay oraciones.' });
+      }
+      return el('div', { class: 'charts' }, groups.map(function (g) {
+        var lines = g.rows.map(function (r) { return r.text; });
+        return el('div', { class: 'chart-paper', lang: g.lang },
+          el('div', { class: 'row between' },
+            el('h3', { class: 'chart-title', text: chartTitle(g.frame, g.lang) }),
+            el('button', { class: 'btn small', type: 'button', title: 'Read the chart aloud', onclick: function () {
+              SG.Speech.stop();
+              g.rows.forEach(function (r) { SG.Speech.speak(r.text, g.lang, { queue: true }); });
+            } }, '🔊 ' + (g.lang === 'es' ? 'Leer' : 'Read'))),
+          el('ol', { class: 'chart-list' }, g.rows.map(function (r) {
+            return el('li', {}, el('span', { class: 'chart-text', text: r.text }),
+              r.student ? el('span', { class: 'chart-name', text: ' (' + r.student + ')' }) : null);
+          })));
       }));
     },
     print: function (lesson) {
@@ -106,11 +143,11 @@
       root.append(el('div', { class: 'card' },
         el('h2', {}, 'Recent trials'),
         el('div', { class: 'table-wrap' }, el('table', {},
-          el('thead', {}, el('tr', {}, ['Date', 'Student', 'Lesson', 'Skill', 'Lang', 'Prompt', 'Response', 'Result'].map(function (h) { return el('th', {}, h); }))),
+          el('thead', {}, el('tr', {}, ['Date', 'Student', 'Lesson', 'Skill', 'Lang', 'Prompt', 'Response', 'Result', 'Cues'].map(function (h) { return el('th', {}, h); }))),
           el('tbody', {}, recent.map(function (r) {
             return el('tr', { class: 'result-' + r.result },
               el('td', {}, new Date(r.ts).toLocaleString()), el('td', {}, r.student), el('td', {}, r.lesson),
-              el('td', {}, r.skill), el('td', {}, r.lang), el('td', {}, r.prompt), el('td', {}, r.response), el('td', {}, r.result));
+              el('td', {}, r.skill), el('td', {}, r.lang), el('td', {}, r.prompt), el('td', {}, r.response), el('td', {}, r.result), el('td', {}, r.cues || ''));
           }))))));
     }
   };

@@ -47,6 +47,9 @@
           if (Number(a.level) >= 1 && Number(a.level) <= 4) out.level = Number(a.level);
           if (a.emoji) out.emoji = String(a.emoji);
           if (SG.safeImage(a.image)) out.image = SG.safeImage(a.image);
+          if (a.point && a.point.x >= 0 && a.point.x <= 1 && a.point.y >= 0 && a.point.y <= 1) {
+            out.point = { x: Math.round(a.point.x * 1000) / 1000, y: Math.round(a.point.y * 1000) / 1000 };
+          }
           if (Array.isArray(a.choices)) out.choices = a.choices.map(choice);
           if (a.parts) out.parts = { en: [].concat(a.parts.en || []).map(String), es: [].concat(a.parts.es || []).map(String) };
           ['min', 'max', 'trials'].forEach(function (k) { if (Number(a[k]) > 0) out[k] = Number(a[k]); });
@@ -178,6 +181,49 @@
     return wrap;
   }
 
+  /* Where the "Point to it" cue arrow goes: tap the picture (or the video preview). */
+  function pointField(act) {
+    var wrap = el('div', { class: 'field' });
+    function draw() {
+      wrap.innerHTML = '';
+      wrap.append(el('div', { class: 'field-label', text: '👉 Point-to spot for the arrow cue (optional): tap the answer in the picture' }));
+      var src = SG.safeImage(act.image) || SG.safeImage(draft.image);
+      var status = el('span', { class: 'muted', text: act.point ? 'Spot set ✔' : 'No spot yet' });
+      var clear = act.point ? el('button', { class: 'btn small', type: 'button', onclick: function () { delete act.point; draw(); } }, 'Clear spot') : null;
+      if (src) {
+        var img = el('img', { src: src, alt: 'Tap where the arrow should point', class: 'point-img' });
+        var box = el('div', { class: 'point-box' }, img);
+        if (act.point) box.append(el('div', { class: 'point-dot', style: { left: act.point.x * 100 + '%', top: act.point.y * 100 + '%' } }));
+        img.addEventListener('click', function (e) {
+          var r = img.getBoundingClientRect();
+          act.point = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
+          draw();
+        });
+        wrap.append(box, el('div', { class: 'row wrap' }, status, clear));
+      } else if (player) {
+        wrap.append(el('div', { class: 'row wrap' },
+          el('button', { class: 'btn small', type: 'button', onclick: function () {
+            var holder = SG.$('#builder-player');
+            player.pause();
+            holder.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            var cover = el('div', { class: 'point-cover', text: 'Tap the answer on the video' });
+            cover.addEventListener('click', function (e) {
+              var r = holder.getBoundingClientRect();
+              act.point = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
+              cover.remove();
+              draw();
+              wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+            holder.append(cover);
+          } }, '🎯 Set spot on the video'), status, clear));
+      } else {
+        wrap.append(el('p', { class: 'muted', text: 'Add a picture (above) or load the video to set a spot.' }));
+      }
+    }
+    draw();
+    return wrap;
+  }
+
   function choicesEditor(act, opts) {
     opts = opts || {};
     var wrap = el('div', { class: 'field' });
@@ -232,6 +278,7 @@
     if (act.type !== 'artic') form.append(pictureField(act, 'Picture for this question (optional — e.g. a different scene for each question)', function () {
       return SG.pick(act.question || act.prompt, 'en');
     }));
+    if (act.type !== 'artic') form.append(pointField(act));
     form.append(el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'Language level' }),
       el('select', { onchange: function () { if (Number(this.value)) act.level = Number(this.value); else delete act.level; } },
         el('option', { value: 0, selected: !act.level }, 'All levels'),

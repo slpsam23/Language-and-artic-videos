@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Talk &amp; Play Videos</title>
   <meta name="description" content="Bilingual (English/Spanish) AAC game for WH questions, yes/no questions, asking questions, and CVC/VCV/CVCV articulation, driven by YouTube videos.">
-  <link rel="stylesheet" href="css/styles.css?v=2026.10.26-2">
+  <link rel="stylesheet" href="css/styles.css?v=2026.10.26-3">
 </head>
 <body>
   <header class="topbar">
@@ -53,11 +53,23 @@
           <div id="player-box" class="player-box" hidden></div>
           <div id="scene-card" class="scene-card" hidden></div>
         </div>
-        <div id="activity-panel" class="activity-panel" aria-live="polite"></div>
+        <div class="play-side">
+          <div id="activity-panel" class="activity-panel" aria-live="polite"></div>
+          <div id="tally-panel" class="card tally-panel"></div>
+        </div>
       </div>
       <div id="board-root" class="board-root"></div>
-      <details id="chart-details" class="card chart">
+      <details id="chart-details" class="card chart" open>
         <summary>📋 Our predictable chart · Nuestra tabla</summary>
+        <details class="chart-help">
+          <summary>How does the predictable chart work?</summary>
+          <ol>
+            <li><strong>Same starter, everyone's own ending.</strong> Each WH question has a sentence starter, like “The ___ is kicking.” Every student finishes it with their own answer, so everyone gets a turn.</li>
+            <li><strong>It writes itself.</strong> When a student builds a correct sentence, it's added to that starter's chart with their name, for example “The boy is kicking. (Sam)”. Questions students ask go on an “Our questions” chart.</li>
+            <li><strong>Reread it together.</strong> Tap 🔊 Read, point to each word, and let students find “their” line. Print it to hang in the room.</li>
+            <li><strong>Use it again.</strong> On later days, reread the chart, and cut a printed sentence into words to rebuild it. Charts stay saved for this lesson until you clear them.</li>
+          </ol>
+        </details>
         <div id="chart-body"></div>
         <div class="row wrap">
           <button id="chart-print" class="btn small" type="button">🖨️ Print</button>
@@ -99,22 +111,22 @@
   <footer class="site-footer muted">Talk &amp; Play · version <span id="app-version"></span></footer>
   <div id="toast" class="toast" role="status"></div>
 
-  <script src="js/core.js?v=2026.10.26-2"></script>
-  <script src="js/data/vocab.js?v=2026.10.26-2"></script>
-  <script src="js/data/artic-words.js?v=2026.10.26-2"></script>
-  <script src="js/data/artic-more.js?v=2026.10.26-2"></script>
-  <script src="js/data/artic-position.js?v=2026.10.26-2"></script>
-  <script src="js/data/lessons.js?v=2026.10.26-2"></script>
-  <script src="js/speech.js?v=2026.10.26-2"></script>
-  <script src="js/aac.js?v=2026.10.26-2"></script>
-  <script src="js/board.js?v=2026.10.26-2"></script>
-  <script src="js/player.js?v=2026.10.26-2"></script>
-  <script src="js/data-log.js?v=2026.10.26-2"></script>
-  <script src="js/artic.js?v=2026.10.26-2"></script>
-  <script src="js/activities.js?v=2026.10.26-2"></script>
-  <script src="js/builder.js?v=2026.10.26-2"></script>
-  <script src="js/moments.js?v=2026.10.26-2"></script>
-  <script src="js/ai-helper.js?v=2026.10.26-2"></script>
-  <script src="js/app.js?v=2026.10.26-2"></script>
+  <script src="js/core.js?v=2026.10.26-3"></script>
+  <script src="js/data/vocab.js?v=2026.10.26-3"></script>
+  <script src="js/data/artic-words.js?v=2026.10.26-3"></script>
+  <script src="js/data/artic-more.js?v=2026.10.26-3"></script>
+  <script src="js/data/artic-position.js?v=2026.10.26-3"></script>
+  <script src="js/data/lessons.js?v=2026.10.26-3"></script>
+  <script src="js/speech.js?v=2026.10.26-3"></script>
+  <script src="js/aac.js?v=2026.10.26-3"></script>
+  <script src="js/board.js?v=2026.10.26-3"></script>
+  <script src="js/player.js?v=2026.10.26-3"></script>
+  <script src="js/data-log.js?v=2026.10.26-3"></script>
+  <script src="js/artic.js?v=2026.10.26-3"></script>
+  <script src="js/activities.js?v=2026.10.26-3"></script>
+  <script src="js/builder.js?v=2026.10.26-3"></script>
+  <script src="js/moments.js?v=2026.10.26-3"></script>
+  <script src="js/ai-helper.js?v=2026.10.26-3"></script>
+  <script src="js/app.js?v=2026.10.26-3"></script>
 </body>
 </html>

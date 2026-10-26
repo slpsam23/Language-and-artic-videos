@@ -13,7 +13,11 @@
       var tab = SG.$('[data-view="' + v + '"]');
       if (tab) tab.classList.toggle('active', v === name);
     });
-    if (name !== 'play') Runner.pause();
+    if (name !== 'play') {
+      Runner.pause();
+      if (board) board.setLock(null);
+      SG.Profile.apply();   // undo the lesson-only language choice
+    }
     if (name !== 'builder') SG.Builder.leave();
     if (name === 'artic') SG.Artic.render(SG.$('#artic-root'));
     if (name === 'data') SG.DataView.render(SG.$('#data-root'));
@@ -53,8 +57,57 @@
   var Runner = {
     lesson: null, player: null, results: [], doneCount: 0, finished: false, uncued: [],
 
-    start: function (lesson) {
+    /* Pick the lesson language first when the student's board is bilingual. */
+    chooseLanguage: function (lesson) {
       Runner.stop();
+      show('play');
+      board.hide();
+      SG.$('#play-title').innerHTML = '';
+      SG.$('#play-title').append(SG.biText(lesson.title));
+      SG.$('#player-box').hidden = true;
+      var scene = SG.$('#scene-card');
+      renderScene(scene, lesson);
+      scene.hidden = false;
+      SG.$('#tally-panel').hidden = true;
+      var panel = SG.$('#activity-panel');
+      panel.innerHTML = '';
+      var go = function (l) { Runner.start(lesson, l); };
+      panel.append(el('div', { class: 'watch' },
+        el('div', { class: 'watch-emoji', 'aria-hidden': 'true', text: '🌐' }),
+        el('h2', { text: 'Which language is this lesson in?' }),
+        el('p', { class: 'muted', text: '¿En qué idioma es esta lección?' }),
+        el('div', { class: 'lang-choice' },
+          el('button', { class: 'btn primary big', type: 'button', onclick: function () { go('en'); } }, '🇺🇸 English'),
+          el('button', { class: 'btn primary big', type: 'button', onclick: function () { go('es'); } }, '🇲🇽 Español'),
+          el('button', { class: 'btn', type: 'button', onclick: function () { go('bi'); } }, '🇺🇸🇲🇽 Both (bilingual)'))));
+    },
+
+    /* Use one language for this lesson only (the student's profile is not changed). */
+    useLanguage: function (lang) {
+      var p = SG.Profile.current();
+      SG.settings.uiLang = lang;
+      SG.settings.answerLang = lang === 'bi' ? (p.startLang || 'en') : lang;
+      var tools = SG.$('#play-tools');
+      var old = SG.$('#lang-chip');
+      if (old) old.remove();
+      var names = { en: '🇺🇸 English', es: '🇲🇽 Español', bi: '🇺🇸🇲🇽 English + Español' };
+      tools.append(el('button', { id: 'lang-chip', class: 'btn small', type: 'button', title: 'Change the lesson language',
+        onclick: function () {
+          if (Runner.doneCount && !confirm('Start the lesson again in another language?')) return;
+          Runner.chooseLanguage(Runner.source);
+        } }, names[lang] + ' · change'));
+    },
+
+    start: function (lesson, lang) {
+      var prof = SG.Profile.current();
+      if (!lang) {
+        if (prof.lang !== 'bi') lang = prof.lang;
+        else { Runner.chooseLanguage(lesson); return; }
+      }
+      Runner.stop();
+      Runner.source = lesson;
+      Runner.lang = lang;
+      Runner.useLanguage(lang);
       // Only the questions for this student's language level.
       lesson = Object.assign({}, lesson, { activities: SG.levelFilter(lesson.activities) });
       Runner.lesson = lesson;
@@ -65,8 +118,11 @@
       Runner.total = lesson.activities.length;
       show('play');
       board.reset();
+      board.setLock(lang === 'bi' ? null : lang);
       board.setLang(SG.settings.answerLang);
       board.hide();
+      SG.$('#tally-panel').hidden = false;
+      renderTally();
 
       SG.$('#play-title').innerHTML = '';
       SG.$('#play-title').append(SG.biText(lesson.title));
@@ -149,8 +205,28 @@
       step();
     },
 
+    /* Arrow cue: point at a spot (x, y from 0 to 1) on the picture or video. */
+    point: function (pt) {
+      Runner.clearPoint();
+      var scene = SG.$('#scene-card'), holder = SG.$('#player-box');
+      var host = !scene.hidden ? scene : !holder.hidden ? holder : null;
+      if (!host) return;
+      var ref = host === scene ? (scene.querySelector('img') || scene.querySelector('.scene-emoji') || scene) : holder;
+      var hr = host.getBoundingClientRect(), rr = ref.getBoundingClientRect();
+      var ptr = el('div', { class: 'pointer', 'aria-hidden': 'true' }, el('div', { class: 'pointer-ring' }), el('div', { class: 'pointer-arrow', text: '⬇' }));
+      ptr.style.left = (rr.left - hr.left + pt.x * rr.width) + 'px';
+      ptr.style.top = (rr.top - hr.top + pt.y * rr.height) + 'px';
+      host.append(ptr);
+      host.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    },
+    clearPoint: function () {
+      document.querySelectorAll('.pointer').forEach(function (p) { p.remove(); });
+    },
+
     show: function (act, opts) {
       Runner.busy = true;
+      Runner.clearPoint();
+      Runner.currentSkill = SG.Activities.skillName(act);
       // A question can bring its own picture; otherwise show the lesson's scene (or the paused video).
       var scene = SG.$('#scene-card');
       var hasVideo = !!Runner.player;
@@ -165,16 +241,19 @@
         lesson: Runner.lesson,
         index: Runner.doneCount,
         total: Runner.total,
+        point: function (pt) { Runner.point(pt); },
         done: function (res) {
           Runner.doneCount++;
-          Runner.results.push(res.result);
+          var cueNames = (res.cues || []).map(function (n) { return SG.CUE_INFO[n] ? SG.CUE_INFO[n].label.en : n; }).join(', ');
+          Runner.results.push({ result: res.result, skill: SG.Activities.skillName(act), cues: cueNames });
           if (!res.logged) {
             SG.Log.add({
               type: act.type, skill: SG.Activities.skillName(act), lang: res.lang,
               lesson: SG.biString(Runner.lesson.title), prompt: SG.Activities.promptText(act),
-              response: res.response, result: res.result, attempts: res.attempts
+              response: res.response, result: res.result, attempts: res.attempts, cues: cueNames
             });
           }
+          renderTally();
           var label = opts.fromVideo ? L('Keep watching', 'Seguir viendo') : L('Next', 'Siguiente');
           box.append(el('div', { class: 'row center next-row' },
             el('button', { class: 'btn primary big', type: 'button', onclick: function () {
@@ -198,8 +277,9 @@
       Runner.finished = true;
       Runner.busy = false;
       board.hide();
+      Runner.clearPoint();
       var r = Runner.results;
-      var count = function (k) { return r.filter(function (x) { return x === k; }).length; };
+      var count = function (k) { return r.filter(function (x) { return x.result === k; }).length; };
       var panel = SG.$('#activity-panel');
       panel.innerHTML = '';
       panel.append(el('div', { class: 'finish' },
@@ -210,7 +290,7 @@
           el('span', {}, '🤝 With cues: ' + count('cued')),
           el('span', {}, '🔁 Not yet: ' + count('incorrect'))),
         el('div', { class: 'row wrap center' },
-          el('button', { class: 'btn primary', type: 'button', onclick: function () { Runner.start(Runner.lesson); } }, '🔁 Play again'),
+          el('button', { class: 'btn primary', type: 'button', onclick: function () { Runner.start(Runner.source, Runner.lang); } }, '🔁 Play again'),
           el('button', { class: 'btn', type: 'button', onclick: function () { SG.Chart.print(Runner.lesson); } }, '🖨️ Print chart'),
           el('button', { class: 'btn', type: 'button', onclick: function () { show('home'); } }, '🏠 Lessons'))));
       SG.$('#chart-details').open = true;
@@ -218,6 +298,7 @@
 
     pause: function () { if (Runner.player) Runner.player.pause(); },
     stop: function () {
+      Runner.clearPoint();
       if (Runner.player) Runner.player.destroy();
       Runner.player = null;
       Runner.total = 0;
@@ -226,6 +307,50 @@
       SG.$('#stage').classList.remove('has-video');
     }
   };
+
+  /* Live tally for this lesson: counts by result and skill, plus buttons to add trials by hand. */
+  function renderTally() {
+    var root = SG.$('#tally-panel');
+    if (!root) return;
+    root.innerHTML = '';
+    var r = Runner.results || [];
+    var n = function (k, list) { return (list || r).filter(function (x) { return x.result === k; }).length; };
+    var pct = function (a, b) { return b ? Math.round(a / b * 100) + '%' : '–'; };
+    var skills = {};
+    r.forEach(function (x) { (skills[x.skill] = skills[x.skill] || []).push(x); });
+    function manual(result) {
+      var skill = Runner.currentSkill || 'Manual tally';
+      SG.Log.add({ type: 'manual', skill: skill, lang: SG.settings.answerLang, lesson: Runner.lesson ? SG.biString(Runner.lesson.title) : '',
+        prompt: '(tally)', response: '(tally)', result: result });
+      Runner.results.push({ result: result, skill: skill, cues: '', manual: true });
+      renderTally();
+    }
+    root.append(
+      el('div', { class: 'row between wrap' },
+        el('strong', { text: '📊 Tally' }),
+        el('span', { class: 'muted', text: r.length + ' trials · ' + pct(n('correct'), r.length) + ' independent' })),
+      el('div', { class: 'tally-counts' },
+        el('span', { class: 'tc tc-correct' }, '⭐ ' + n('correct'), el('small', { text: 'independent' })),
+        el('span', { class: 'tc tc-cued' }, '🤝 ' + n('cued'), el('small', { text: 'with cues' })),
+        el('span', { class: 'tc tc-incorrect' }, '🔁 ' + n('incorrect'), el('small', { text: 'not yet' }))),
+      el('div', { class: 'row wrap tally-buttons' },
+        el('span', { class: 'muted', text: 'Add a trial:' }),
+        el('button', { class: 'btn small score-correct', type: 'button', onclick: function () { manual('correct'); } }, '+ ⭐'),
+        el('button', { class: 'btn small score-approx', type: 'button', onclick: function () { manual('cued'); } }, '+ 🤝'),
+        el('button', { class: 'btn small score-incorrect', type: 'button', onclick: function () { manual('incorrect'); } }, '+ 🔁'),
+        el('button', { class: 'btn small', type: 'button', disabled: !r.some(function (x) { return x.manual; }), onclick: function () {
+          for (var i = Runner.results.length - 1; i >= 0; i--) {
+            if (Runner.results[i].manual) { Runner.results.splice(i, 1); SG.Log.removeLastManual(); break; }
+          }
+          renderTally();
+        } }, '↩ Undo')),
+      Object.keys(skills).length ? el('details', { class: 'tally-skills' }, el('summary', { text: 'By skill' }),
+        el('table', {}, el('tbody', {}, Object.keys(skills).map(function (k) {
+          var list = skills[k];
+          return el('tr', {}, el('td', { text: k }), el('td', { text: '⭐ ' + n('correct', list) }), el('td', { text: '🤝 ' + n('cued', list) }),
+            el('td', { text: '🔁 ' + n('incorrect', list) }));
+        })))) : null);
+  }
 
   function renderScene(root, lesson) {
     root.innerHTML = '';
@@ -315,6 +440,7 @@
     });
     // Each student keeps their own AAC profile (program, grid, language, buttons).
     SG.$('#student-name').addEventListener('change', function () {
+      if (this.value.trim() === SG.settings.student) return;   // no change: don't redraw (it would swallow a tap)
       SG.settings.student = this.value.trim();
       SG.saveSettings();
       SG.Profile.apply();

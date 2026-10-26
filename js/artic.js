@@ -265,7 +265,7 @@
         if (state.level === 'syl') {
           controls.push(
             el('label', {}, 'Position ', sel('pos', posChoices())),
-            el('label', {}, 'Length ', sel('len', [['1', '1 syllable'], ['2', '2 syllables'], ['3', '3 syllables']])));
+            el('label', {}, 'Length ', sel('len', [['1', '1 syllable'], ['2', '2 syllables'], ['3', '3 syllables'], ['4', '4 syllables'], ['5', '5 syllables']])));
         }
       }
       if (state.level !== 'iso') controls.push(el('button', { class: 'btn', type: 'button', onclick: rebuild }, '🔀 Shuffle'));

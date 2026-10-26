@@ -346,3 +346,43 @@ tr.result-cued td:last-child { color: var(--warn); font-weight: 700; }
 .draw-desc { width: 100%; font: inherit; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); margin: 6px 0; }
 .lesson-scene img { background: #fff; }
 @media print { .print-img { max-width: 100%; max-height: 45vh; } }
+
+/* ---------- Cues, pointer, tally, chart ---------- */
+.cue-panel { margin-top: 10px; padding: 10px; border: 2px solid var(--warn); border-radius: 12px; background: var(--bg); }
+.cue-title { font-weight: 700; font-size: .92rem; margin-bottom: 6px; }
+.cue-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.cue-btn .bi { flex-direction: row; gap: 4px; }
+.cue-btn.used { background: #fff3c4; border-color: var(--warn); color: #6b4a00; }
+.two-choices { margin: 10px 0; }
+.small-binary { min-height: 110px; font-size: 1.1rem; }
+.binary-btn.glow { box-shadow: 0 0 0 6px #ffd23f; animation: pulse 1s infinite; }
+.scene-card { position: relative; }
+.pointer { position: absolute; width: 0; height: 0; z-index: 5; pointer-events: none; }
+.pointer-ring { position: absolute; left: -34px; top: -34px; width: 68px; height: 68px; border-radius: 50%; border: 6px solid #ff3b30; box-shadow: 0 0 0 4px #fff; animation: ring 1.2s infinite; }
+.pointer-arrow { position: absolute; left: -22px; top: -96px; font-size: 48px; line-height: 1; color: #ff3b30; text-shadow: 0 0 4px #fff, 0 0 8px #fff; animation: bob .8s infinite alternate; }
+@keyframes ring { 50% { transform: scale(1.15); } }
+@keyframes bob { to { transform: translateY(12px); } }
+@media (prefers-reduced-motion: reduce) { .pointer-ring, .pointer-arrow, .binary-btn.glow { animation: none; } }
+.play-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.tally-panel { margin: 0; padding: 10px 12px; }
+.tally-counts { display: flex; gap: 10px; margin: 6px 0; }
+.tc { flex: 1; text-align: center; border-radius: 10px; padding: 6px; font-weight: 800; font-size: 1.2rem; background: var(--bg); }
+.tc small { display: block; font-weight: 500; font-size: .75rem; color: var(--muted); }
+.tc-correct { border: 2px solid var(--good); } .tc-cued { border: 2px solid var(--warn); } .tc-incorrect { border: 2px solid var(--bad); }
+.tally-skills td { padding: 2px 6px; font-size: .85rem; }
+.lang-choice { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 12px; }
+.lang-choice .btn { min-width: 240px; justify-content: center; }
+.chart-help { margin: 8px 0 12px; background: var(--bg); border-radius: 10px; padding: 8px 12px; }
+.chart-help summary { font-weight: 600; cursor: pointer; }
+.chart-help li { margin: 6px 0; }
+.charts { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.chart-paper { background: #fffef6; color: #1d2433; border: 1px solid #e6dfc2; border-radius: 6px; padding: 12px 16px;
+  background-image: repeating-linear-gradient(#fffef6 0 34px, #cfe3f7 34px 35px); box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+.chart-title { margin: 0 0 6px; font-size: 1.15rem; }
+.chart-paper .chart-list { margin: 0; padding-left: 1.4em; line-height: 35px; font-size: 1.25rem; }
+.chart-paper .chart-name { color: #5f6b80; font-size: .85em; }
+@media print { .chart-paper { break-inside: avoid; box-shadow: none; } .chart-paper .btn { display: none; } }
+.point-box { position: relative; display: inline-block; max-width: 420px; }
+.point-img { width: 100%; border-radius: 8px; cursor: crosshair; border: 1px solid var(--border); display: block; }
+.point-dot { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; border: 5px solid #ff3b30; background: rgba(255,255,255,.6); pointer-events: none; }
+.point-cover { position: absolute; inset: 0; z-index: 4; background: rgba(255,59,48,.15); color: #fff; font-weight: 800; font-size: 1.3rem; display: flex !important; align-items: center; justify-content: center; cursor: crosshair; text-shadow: 0 1px 3px #000; }
