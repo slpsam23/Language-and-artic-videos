@@ -32,7 +32,7 @@ window.SG = window.SG || {};
   };
 
   /* Bump this (and version.json, and the ?v= in index.html) with every update. */
-  SG.VERSION = '2026.10.26-3';
+  SG.VERSION = '2026.10.26-4';
 
   SG.$ = function (sel, root) { return (root || document).querySelector(sel); };
 

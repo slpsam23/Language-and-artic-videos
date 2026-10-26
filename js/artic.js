@@ -242,7 +242,7 @@
 
       var controls = [
         el('label', {}, 'Language ', sel('lang', [['en', 'English'], ['es', 'Español']], function () { state.sound = ''; })),
-        el('label', {}, 'Practice ', sel('level', [['iso', 'Sound in isolation'], ['syl', 'Syllables'], ['word', 'Words']], function () {
+        el('label', {}, 'Practice ', sel('level', [['word', 'Real words'], ['iso', 'Sound in isolation'], ['syl', 'Nonsense syllables (sa, asa)']], function () {
           state.pos = ''; state.len = '';
         }))
       ];

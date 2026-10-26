@@ -85,6 +85,8 @@ Then fix any differences with the button editor.
 ## Articulation tips
 
 - **Sound in isolation:** the computer voice can't say a sound by itself (it says "ess" for *s*). So press **🎙️ Record your model** once per sound. Your recording is saved on that device and plays as the model every time. **🐢 In syllables** plays the sound in syllables instead.
+- **Real words:** *Real words* is the default practice. The word bank has about 380 English and 240 Spanish picturable, child-friendly words, chosen so each sound has words at the beginning, middle, and end at 1–5 syllables. Some combinations don't exist in a language and show nothing, for example a sound in the middle of a 1-syllable word, Spanish words ending in most consonants, or English /h/, /w/, /y/ at the end. *Nonsense syllables (sa, asa)* is still available for motor-planning drills.
+- **Add or fix words** in `js/data/artic-bank.js`, one per line: `word emoji syl-la-bles`. If a spelling sounds different from how it looks, add a fix, e.g. `nose 👃 nose fix:s@final=z`.
 - **Position and length (Words):**
   - **Syllables:** 1, 2, 3, 4, or 5 syllables.
   - **Target sound + Position:** beginning / middle / end. Examples: /k/ at the end of 1-syllable words (*book, duck, cake*), or rr fuerte in the middle (*perro, carro*).

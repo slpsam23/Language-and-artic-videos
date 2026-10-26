@@ -12,17 +12,20 @@
   };
   var FINAL_CLUSTERS = ['st', 'nt', 'lk', 'nd', 'sk', 'mp', 'nk', 'ft', 'lt', 'ld', 'ks', 'sp', 'pt', 'kt'];
   // Placeholders for sounds spelled with two letters.
-  var BACK = { S: 'sh', C: 'ch', T: 'th', G: 'ng', R: 'rr', N: 'ñ', K: 'k', Y: 'y', Q: 'g' };
+  var BACK = { S: 'sh', C: 'ch', T: 'th', G: 'ng', R: 'rr', N: 'ñ', K: 'k', Y: 'y', Q: 'g', J: 'j' };
 
   function prep(word, lang) {
-    var w = String(word || '').toLowerCase().replace(/[áà]/g, 'a').replace(/[éè]/g, 'e').replace(/[íì]/g, 'i')
+    var w = String(word || '').toLowerCase().replace(/[^a-zñáéíóúüàèìòù]/g, '').replace(/[áà]/g, 'a').replace(/[éè]/g, 'e').replace(/[íì]/g, 'i')
       .replace(/[óò]/g, 'o').replace(/[úùü]/g, 'u');
     if (lang === 'es') {
       w = w.replace(/ch/g, 'C').replace(/h/g, '').replace(/rr/g, 'R').replace(/ll/g, 'Y').replace(/ñ/g, 'N')
         .replace(/qu(?=[ei])/g, 'K').replace(/gu(?=[ei])/g, 'Q').replace(/g(?=[ei])/g, 'j')
         .replace(/c(?=[ei])/g, 's').replace(/c/g, 'K').replace(/z/g, 's').replace(/v/g, 'b').replace(/x/g, 'Ks');
     } else {
-      w = w.replace(/^gh/, 'g').replace(/^kn/, 'n').replace(/^wr/, 'r').replace(/ck/g, 'K').replace(/ph/g, 'f')
+      w = w.replace(/^gh/, 'g').replace(/^kn/, 'n').replace(/^wr/, 'r').replace(/mb$/, 'm').replace(/igh/g, 'i')
+        .replace(/([^aeiouy])le$/, '$1ul')            // apple, turtle: syllabic l at the end
+        .replace(/dge/g, 'J').replace(/([aeiou]n?)ge$/, '$1J')   // bridge, cage, orange
+        .replace(/cc/g, 'K').replace(/ck/g, 'K').replace(/ph/g, 'f')
         .replace(/sh/g, 'S').replace(/tch/g, 'C').replace(/ch/g, 'C').replace(/th/g, 'T').replace(/wh/g, 'w')
         .replace(/qu/g, 'Kw').replace(/ng(?![aeiou])/g, 'G').replace(/c(?=[eiy])/g, 's').replace(/c/g, 'K')
         .replace(/x/g, 'Ks').replace(/k/g, 'K').replace(/([bdfglmnprstz])\1/g, '$1');
@@ -95,16 +98,28 @@
     return out;
   };
 
+  /* Targets for a word list item, with its own corrections applied: item.fix maps
+     'id@pos' or 'id' to the right sound (or null to drop it), e.g. nose {'s@final': 'z'}. */
+  SG.itemTargets = function (item, lang) {
+    var list = SG.articTargets(item.word, lang);
+    if (!item.fix) return list;
+    return list.map(function (t) {
+      var k1 = t.id + '@' + t.pos;
+      var to = k1 in item.fix ? item.fix[k1] : (t.id in item.fix ? item.fix[t.id] : t.id);
+      return to ? { id: to, pos: t.pos } : null;
+    }).filter(Boolean);
+  };
+
   /* Target sounds in a word, for the sound filter (replaces the simpler version). */
   SG.articSounds = function (item, type, lang) {
-    var ids = SG.articTargets(item.word, lang).map(function (t) { return t.id; });
+    var ids = SG.itemTargets(item, lang).map(function (t) { return t.id; });
     if (item.target) ids.push(item.target);
     return ids.filter(function (x, i, a) { return a.indexOf(x) === i; });
   };
 
   SG.articHasTarget = function (item, lang, sound, pos) {
     if (!sound) return true;
-    return SG.articTargets(item.word, lang).some(function (t) { return t.id === sound && (!pos || t.pos === pos); }) ||
+    return SG.itemTargets(item, lang).some(function (t) { return t.id === sound && (!pos || t.pos === pos); }) ||
       (!pos && item.target === sound);
   };
 
