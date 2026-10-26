@@ -55,6 +55,8 @@
 
     start: function (lesson) {
       Runner.stop();
+      // Only the questions for this student's language level.
+      lesson = Object.assign({}, lesson, { activities: SG.levelFilter(lesson.activities) });
       Runner.lesson = lesson;
       Runner.results = [];
       Runner.doneCount = 0;
@@ -296,7 +298,12 @@
     document.querySelectorAll('[data-view]').forEach(function (b) {
       b.addEventListener('click', function () {
         var v = b.getAttribute('data-view');
-        if (v === 'builder') { show('builder'); SG.Builder.open(SG.$('#builder-root'), null); return; }
+        if (v === 'builder') {
+          show('builder');
+          SG.AILesson.render(SG.$('#ai-lesson-body'));
+          SG.Builder.open(SG.$('#builder-root'), null);
+          return;
+        }
         show(v);
       });
     });

@@ -73,7 +73,11 @@
 
     <section id="view-builder" hidden>
       <h1>Lesson Builder</h1>
-      <p class="muted">Paste a YouTube link, play the video, pause where you want a question, then add an activity. It saves on this device.</p>
+      <details id="ai-lesson" class="card ai-card">
+        <summary>✨ Make a lesson with Claude from a YouTube video</summary>
+        <div id="ai-lesson-body"></div>
+      </details>
+      <p class="muted">Or build it yourself: paste a YouTube link, play the video, pause where you want a question, then add an activity. It saves on this device.</p>
       <div id="builder-root"></div>
     </section>
 
@@ -102,6 +106,7 @@
   <script src="js/artic.js"></script>
   <script src="js/activities.js"></script>
   <script src="js/builder.js"></script>
+  <script src="js/ai-helper.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

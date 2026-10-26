@@ -51,6 +51,25 @@
     }
   };
 
+  /* Language levels: decide which questions a student gets. */
+  SG.LEVELS = {
+    1: { name: 'Level 1 – Emerging', short: 'L1',
+         desc: 'Yes/no and this-or-that questions; concrete WHAT/WHO; 1–2 word answers.' },
+    2: { name: 'Level 2 – Developing', short: 'L2',
+         desc: 'WHO, WHAT, WHERE questions; 3-word answers.' },
+    3: { name: 'Level 3 – Expanding', short: 'L3',
+         desc: 'WHO, WHAT, WHERE, WHEN; 3–5 word answers; asking questions.' },
+    4: { name: 'Level 4 – Advanced', short: 'L4',
+         desc: 'WHY and HOW, predicting and inferring; 4–6 word answers.' }
+  };
+  /* Activities for the current student's level (untagged activities are for everyone). */
+  SG.levelFilter = function (acts) {
+    var lvl = Number(SG.Profile.current().langLevel) || 0;
+    if (!lvl) return acts.slice();
+    var mine = acts.filter(function (a) { return !a.level || Number(a.level) === lvl; });
+    return mine.length ? mine : acts.slice();
+  };
+
   var CAT_EMOJI = { people: '👪', places: '🏘️', actions: '🏃', things: '🧺', describe: '🎨', time: '🕒' };
   var LANG_LABEL = { en: 'EN', es: 'ES', bi: 'EN + ES' };
 
@@ -72,6 +91,7 @@
       autoReturn: d.autoReturn,
       lang: 'bi',
       startLang: 'en',
+      langLevel: 0,
       pages: { en: null, es: null }
     }, base || {});
   }
@@ -239,7 +259,7 @@
         el('option', { value: 'es', selected: p.startLang === 'es' }, 'Español'))) : null;
 
     return el('div', { class: 'card settings aac-setup' },
-      el('h2', {}, '🗂️ AAC system ', el('span', { class: 'muted', text: who })),
+      el('h2', {}, '🗂️ Student setup ', el('span', { class: 'muted', text: who })),
       el('label', { class: 'field' }, el('span', { class: 'field-label', text: 'AAC program' }), programSel),
       el('label', { class: 'field' }, el('span', { class: 'field-label', text: 'Grid size' }), sizeSel),
       p.size === 'custom' ? el('div', { class: 'row wrap' }, el('label', {}, 'Rows ', num('rows')), el('label', {}, 'Columns ', num('cols'))) : null,
@@ -249,6 +269,12 @@
           el('option', { value: 'onepage', selected: p.layout === 'onepage' }, 'All words on one page (1-hit)'))),
       el('label', { class: 'field' }, el('span', { class: 'field-label', text: 'Language' }), langSel),
       startSel,
+      el('label', { class: 'field' }, el('span', { class: 'field-label', text: 'Language level (which questions this student gets)' }),
+        el('select', { onchange: function () { update({ langLevel: Number(this.value) }); } },
+          el('option', { value: 0, selected: !p.langLevel }, 'All questions (no level filter)'),
+          Object.keys(SG.LEVELS).map(function (k) {
+            return el('option', { value: k, selected: Number(p.langLevel) === Number(k) }, SG.LEVELS[k].name + ': ' + SG.LEVELS[k].desc);
+          }))),
       el('label', { class: 'check' }, el('input', { type: 'checkbox', checked: p.fringe, onchange: function () { update({ fringe: this.checked }); } }),
         ' Show an activity-word row above the grid (turn off to practice motor plans)'),
       el('label', { class: 'check' }, el('input', { type: 'checkbox', checked: p.autoReturn, onchange: function () { update({ autoReturn: this.checked }); } }),
@@ -338,6 +364,20 @@
       grid);
 
     if (ed.cell != null) card.append(cellEditor(p, lang, pages, page.cells[ed.cell] || null, commit, rerender));
+    card.append(SG.BoardImport.render({
+      profile: p, lang: lang, pageLabel: page.label,
+      onPages: function (newPages) {
+        var np = SG.Profile.current();
+        np.pages[lang] = newPages;
+        ed.page = 'home'; ed.cell = null; ed.swapFrom = null;
+        SG.Profile.save(np);
+        rerender();
+      },
+      onCells: function (cells) {
+        ed.cell = null;
+        commit(function (pg) { pg[ed.page].cells = cells; });
+      }
+    }));
     return card;
   }
 

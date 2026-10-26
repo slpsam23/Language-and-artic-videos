@@ -44,6 +44,7 @@
           ['question', 'frame', 'prompt', 'example', 'word', 'shape'].forEach(function (k) { if (a[k]) out[k] = txt(a[k]); });
           if (a.wh) out.wh = String(a.wh);
           if (a.cue) out.cue = String(a.cue);
+          if (Number(a.level) >= 1 && Number(a.level) <= 4) out.level = Number(a.level);
           if (a.emoji) out.emoji = String(a.emoji);
           if (Array.isArray(a.choices)) out.choices = a.choices.map(choice);
           if (a.parts) out.parts = { en: [].concat(a.parts.en || []).map(String), es: [].concat(a.parts.es || []).map(String) };
@@ -160,6 +161,10 @@
     var form = el('div', { class: 'card act-form' });
     form.append(el('h3', {}, (editing.index == null ? 'New ' : 'Edit ') + typeName(act.type)));
     form.append(timeField(act));
+    form.append(el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'Language level' }),
+      el('select', { onchange: function () { if (Number(this.value)) act.level = Number(this.value); else delete act.level; } },
+        el('option', { value: 0, selected: !act.level }, 'All levels'),
+        Object.keys(SG.LEVELS).map(function (k) { return el('option', { value: k, selected: Number(act.level) === Number(k) }, SG.LEVELS[k].name); }))));
 
     if (act.type === 'wh') {
       form.append(el('div', { class: 'field' }, el('div', { class: 'field-label', text: 'WH word' }),
@@ -289,6 +294,7 @@
     draft.activities.forEach(function (a, i) {
       listEl.append(el('div', { class: 'act-row' },
         el('span', { class: 'act-time', text: typeof a.at === 'number' ? SG.formatTime(a.at) : '—' }),
+        a.level ? el('span', { class: 'chip', text: 'L' + a.level }) : null,
         el('span', { class: 'badge badge-' + (a.wh || a.type), text: a.type === 'wh' ? (a.wh || 'wh').toUpperCase() : typeName(a.type) }),
         el('span', { class: 'act-summary', text: SG.Activities.promptText(a) || '(blank)' }),
         typeof a.at === 'number' && player ? el('button', { class: 'btn small', type: 'button', title: 'Jump video here', onclick: function () {
@@ -395,7 +401,8 @@
       editing = null;
       if (lesson) {
         draft = JSON.parse(JSON.stringify(lesson));
-        if (draft.builtin) { draft.id = SG.uid('lesson'); delete draft.builtin; draft.title.en += ' (copy)'; draft.title.es += ' (copia)'; draft._isNew = true; }
+        if (draft.builtin) { draft.id = SG.uid('lesson'); delete draft.builtin; draft.title.en += ' (copy)'; draft.title.es += ' (copia)'; }
+        draft._isNew = !SG.Lessons.custom().some(function (l) { return l.id === draft.id; });
       } else {
         draft = blankLesson();
         draft._isNew = true;

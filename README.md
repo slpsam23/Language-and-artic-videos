@@ -13,6 +13,37 @@ It targets:
 | **Predictable chart writing** | Every correct sentence is added to the lesson's chart with the student's name, so a group builds a chart together. It can be printed. |
 | **Data collection** | Every trial is saved with independent / with cues / incorrect. A summary by skill is shown and can be exported as a CSV for IEP progress notes. |
 
+## ✨ Let Claude write the questions (works with Claude Pro)
+
+In **🛠️ Build**, open **"Make a lesson with Claude from a YouTube video"**:
+
+1. Paste the YouTube link and pick the language levels and languages.
+2. Copy the transcript from YouTube and paste it in. On youtube.com, click **…more** under the video → **Show transcript** → select the lines → copy. For videos with little talking, add notes about what happens on screen.
+3. Press **📋 Copy request**, open Claude, paste, and send. You can also attach screenshots of the video.
+4. Paste Claude's answer back and press **✨ Make the lesson**.
+
+You get a draft lesson that stops at the right times, in English and Spanish, with questions for each level. **Check every question before saving.** Only the video's words go to Claude, never student names or data.
+
+### Language levels
+
+Set each student's level in **⚙️ → Student setup**. Each question can be tagged with a level, either by Claude or in the activity editor. A student only gets questions at their level, plus untagged ones.
+
+| Level | Questions |
+|---|---|
+| 1 – Emerging | Yes/no, this-or-that, concrete *what/who*; 1–2 word answers |
+| 2 – Developing | *who, what, where*; 3-word answers |
+| 3 – Expanding | adds *when* and asking questions; 3–5 word answers |
+| 4 – Advanced | *why/how*, predicting, inferring; 4–6 word answers |
+
+### Copy the student's real board
+
+In **⚙️ → Customize the board → 📸 Fill the board from screenshots or a typed list**:
+
+- **From screenshots:** screenshot the home page (and folders) on the student's device. Copy the request, attach the screenshots in Claude, and paste the answer back.
+- **Typed list (no AI):** one line per row of buttons, separated by commas. You can also paste from a spreadsheet.
+
+Then fix any differences with the button editor.
+
 ## How YouTube makes it dynamic
 
 Each lesson can be linked to **any YouTube video**. You add questions at timestamps. The video plays, **pauses itself at each timestamp**, shows the question with the AAC board, and continues after the student answers. The paused video frame becomes the picture scene. Questions without a timestamp are asked after the video ends.

@@ -312,3 +312,16 @@ tr.result-cued td:last-child { color: var(--warn); font-weight: 700; }
 }
 .tabs-nav { flex: 1 1 430px; }
 .top-controls { margin-left: auto; }
+
+/* ---------- Claude helpers ---------- */
+.ai-card > summary, .board-import > summary { cursor: pointer; font-weight: 700; font-size: 1.05rem; }
+.ai-card[open] { border: 2px solid var(--primary); }
+.ai-step { display: flex; gap: 12px; margin: 14px 0; }
+.ai-step-num { flex: 0 0 32px; height: 32px; border-radius: 50%; background: var(--primary); color: var(--primary-text); display: flex; align-items: center; justify-content: center; font-weight: 800; }
+.ai-step-body { flex: 1; min-width: 0; }
+.ai-step-body textarea, .board-import textarea { width: 100%; font: inherit; font-size: .95rem; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); margin: 6px 0; }
+.ai-request { font-family: ui-monospace, Menlo, monospace !important; font-size: .8rem !important; }
+.board-import { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; }
+.import-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 820px) { .import-cols { grid-template-columns: 1fr; } }
+.import-col ol { padding-left: 1.2em; margin: 6px 0; }
